@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: qsg-{{ target }}-{{ run_id }}
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: qsg
+          image: {{ image }}
+          env:
+            - name: IBM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ibm-credentials
+                  key: token
