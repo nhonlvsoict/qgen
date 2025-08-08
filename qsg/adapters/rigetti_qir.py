@@ -3,6 +3,10 @@ from .base import Adapter
 class RigettiQIRAdapter(Adapter):
     name = "rigetti"
 
+    def __init__(self, **kwargs):
+        # Store kwargs if needed, or just accept them to avoid errors
+        self.config = kwargs
+
     def required_ir(self) -> str:
         return "qir"
 
