@@ -32,11 +32,11 @@ token = os.getenv("IBM_TOKEN")
 if not token:
     print("No IBM_TOKEN env var found; running local simulation via qiskit instead.")
     try:
-        from qiskit.primitives import Sampler as LocalSampler
+        from qiskit_aer.primitives import Sampler as LocalSampler
     except ImportError:
         # Fallback for older/newer path changes
         from qiskit_ibm_runtime import Sampler as LocalSampler
-        
+
     sampler = LocalSampler()
     print(sampler.run(qc).result())
 else:
