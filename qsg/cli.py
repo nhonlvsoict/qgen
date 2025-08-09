@@ -3,7 +3,7 @@ from qsg.ir.lower import lower_to_ir
 from qsg.adapters import base as adapters_base
 from qsg.container.docker import build_image
 
-app = typer.Typer(help="Quantum Service Generator")
+app = typer.Typer(help="QGen - Quantum Service Generator")
 
 @app.command()
 def build(

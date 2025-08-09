@@ -15,7 +15,7 @@ class IBMQasm3Adapter(Adapter):
         return {"program.qasm": qasm3}
 
     def runtime_packages(self) -> list[str]:
-        return ["qiskit", "qiskit-ibm-runtime", "qiskit_qasm3_import"]
+        return ["qiskit", "qiskit-ibm-runtime", "qiskit_qasm3_import", "qiskit-aer"]
 
     def entrypoint(self) -> str:
         # Uses IBM Token via env var IBM_TOKEN; runs a quick Sampler job
@@ -31,7 +31,12 @@ qc = loads(qasm3)
 token = os.getenv("IBM_TOKEN")
 if not token:
     print("No IBM_TOKEN env var found; running local simulation via qiskit instead.")
-    from qiskit.primitives import Sampler as LocalSampler
+    try:
+        from qiskit.primitives import Sampler as LocalSampler
+    except ImportError:
+        # Fallback for older/newer path changes
+        from qiskit_ibm_runtime import Sampler as LocalSampler
+        
     sampler = LocalSampler()
     print(sampler.run(qc).result())
 else:
