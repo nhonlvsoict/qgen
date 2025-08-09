@@ -15,7 +15,7 @@ class IBMQasm3Adapter(Adapter):
         return {"program.qasm": qasm3}
 
     def runtime_packages(self) -> list[str]:
-        return ["qiskit", "qiskit-ibm-runtime"]
+        return ["qiskit", "qiskit-ibm-runtime", "qiskit_qasm3_import"]
 
     def entrypoint(self) -> str:
         # Uses IBM Token via env var IBM_TOKEN; runs a quick Sampler job
