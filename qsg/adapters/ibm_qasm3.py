@@ -28,4 +28,4 @@ class IBMQasm3Adapter(Adapter):
             "payload_path": self.config.get("payload_path", "/app/payload/program.qasm"),
             "token_env": self.config.get("token_env", "IBM_TOKEN"),
         }
-        return Template(template_text).render(context)
+        return Template(template_text).render(**context)
