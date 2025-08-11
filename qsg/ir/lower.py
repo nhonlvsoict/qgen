@@ -16,10 +16,10 @@ def lower_to_ir(src_path: str, kind: str):
         qc = scope["build_circuit"]()
         if not isinstance(qc, QuantumCircuit):
             raise TypeError("build_circuit() must return a qiskit.QuantumCircuit.")
-        return {"qasm3": dumps(qc)}
+        return {"program.qasm": dumps(qc)}
 
     elif kind == "qir":
-        # Placeholder for PyQIR/pytket-qir integration
-        raise NotImplementedError("QIR path not wired yet.")
+        # Pass-through for pre-generated QIR bitcode or LLVM IR
+        return {"program.bc": src.read_bytes()}
     else:
         raise ValueError(f"Unknown IR kind: {kind}")
