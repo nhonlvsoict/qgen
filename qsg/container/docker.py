@@ -23,13 +23,13 @@ def build_image(adapter, payload: dict, image: str | None, workdir: str = ".qsg_
 
     # Render entrypoint
     entrypoint_tpl = (Path(__file__).parent / "templates" / "entrypoint.sh.j2").read_text()
-    entrypoint = Template(entrypoint_tpl).render(adapter_entrypoint=adapter.entrypoint())
+    entrypoint = Template(entrypoint_tpl).render(adapter_entrypoint=wrap_python_script_in_shell(adapter.entrypoint()))
     (work / "entrypoint.sh").write_text(entrypoint)
     os.chmod(work / "entrypoint.sh", 0o755)
 
     # Render Dockerfile
     dockerfile_tpl = (Path(__file__).parent / "templates" / "Dockerfile.j2").read_text()
-    dockerfile = Template(dockerfile_tpl).render(runtime_packages=wrap_python_script_in_shell(adapter.runtime_packages()))
+    dockerfile = Template(dockerfile_tpl).render(runtime_packages=adapter.runtime_packages())
     (work / "Dockerfile").write_text(dockerfile)
 
     tag = image or f"qsg/{adapter.name}:local"
