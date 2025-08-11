@@ -1,7 +1,9 @@
 from .base import Adapter
+from . import register_adapter
 
+
+@register_adapter("braket")
 class BraketQasm3Adapter(Adapter):
-    name = "braket"
 
     def __init__(self, **kwargs):
         # Store kwargs if needed, or just accept them to avoid errors

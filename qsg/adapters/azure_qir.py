@@ -1,7 +1,9 @@
 from .base import Adapter
+from . import register_adapter
 
+
+@register_adapter("azure")
 class AzureQIRAdapter(Adapter):
-    name = "azure"
     def __init__(self, profile="base"):
         self.profile = profile
 
