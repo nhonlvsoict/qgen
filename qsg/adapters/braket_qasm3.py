@@ -11,7 +11,7 @@ class BraketQasm3Adapter(Adapter):
         return "qasm3"
 
     def prepare_payload(self, ir_artifact) -> dict:
-        return {"program.qasm": ir_artifact["qasm3"]}
+        return ir_artifact
 
     def runtime_packages(self) -> list[str]:
         return ["amazon-braket-sdk"]
