@@ -29,10 +29,18 @@ def build_image(adapter, payload: dict, image: str | None, workdir: str = ".qsg_
 
     # Render Dockerfile
     dockerfile_tpl = (Path(__file__).parent / "templates" / "Dockerfile.j2").read_text()
-    dockerfile = Template(dockerfile_tpl).render(runtime_packages=adapter.runtime_packages())
+    dockerfile = Template(dockerfile_tpl).render(runtime_packages=wrap_python_script_in_shell(adapter.runtime_packages()))
     (work / "Dockerfile").write_text(dockerfile)
 
     tag = image or f"qsg/{adapter.name}:local"
     client = docker.from_env()
     client.images.build(path=str(work), tag=tag)
     return tag
+
+def wrap_python_script_in_shell(script: str) -> str:
+    """Wrap a Python script in a shell script to ensure it runs in the correct environment."""
+    return r"""
+python - <<'PY'
+""" + script + r"""
+PY
+"""
