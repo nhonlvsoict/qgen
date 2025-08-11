@@ -21,4 +21,8 @@ class IBMQasm3Adapter(Adapter):
     def entrypoint(self) -> str:
         tpl_path = Path(__file__).parent / "templates" / "ibm_sampler.py.j2"
         template = Template(tpl_path.read_text())
-        return template.render()
+        context = {
+            "payload_path": self.config.get("payload_path", "/app/payload/program.qasm"),
+            "token_env_var": self.config.get("token_env_var", "IBM_TOKEN"),
+        }
+        return template.render(**context)
