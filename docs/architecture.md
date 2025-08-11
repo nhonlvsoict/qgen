@@ -29,3 +29,35 @@ This document outlines the proposed design based on the latest planning discussi
 - **Performance Optimization**: Integrate session-based or pre‑deployed execution modes to reduce latency. Otherwise, optimize container startup and submission routines.
 - **Security**: Manage API tokens and credentials securely through environment variables or secret stores within container environments.
 
+## 3. Template Variables and Provider Wrappers
+
+Adapters use Jinja2 templates to build provider-specific entrypoints. Templates receive
+variables through a context dictionary, and the environment is configured with
+`StrictUndefined` so that missing variables surface as errors during rendering.
+
+### Default Context Keys
+
+The IBM sampler template (`qsg/adapters/templates/ibm_sampler.py.j2`) illustrates the
+expected context keys:
+
+- `payload_path`: path to the serialized circuit file. Defaults to
+  `/app/payload/program.qasm`.
+- `token_env_var`: name of the environment variable that carries the API token.
+  Defaults to `IBM_TOKEN`.
+
+Adapters may override these defaults by supplying their own context values. If a required
+key is missing or falsy, `template_manager.render` raises a `ValueError`.
+
+### Adding New Provider Wrappers
+
+To introduce support for another provider:
+
+1. **Create an `Adapter` subclass** under `qsg/adapters/` implementing
+   `required_ir`, `prepare_payload`, `runtime_packages`, and `entrypoint`.
+2. **Add a Jinja2 template** under `qsg/adapters/templates/` and render it in
+   `entrypoint`, documenting all template variables and their defaults.
+3. **Validate required fields** using `template_manager.render(..., required_fields=[...])`
+   so missing context values fail fast.
+4. **Write tests** that demonstrate both default behavior and custom overrides for the
+   template variables.
+
