@@ -1,4 +1,4 @@
-target: ibm_qasm3
+target: ibm
 execution_mode: job
 profile: base
 workdir: .qsg_build

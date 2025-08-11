@@ -26,6 +26,9 @@ class Adapter(ABC):
 def load_adapter(target: str, **kwargs) -> "Adapter":
     """Instantiate an adapter for ``target`` using the registration registry."""
 
+    # print all ADAPTER_REGISTRY here for debugging purposes
+    print("ADAPTER_REGISTRY:", ADAPTER_REGISTRY)
+
     try:
         adapter_cls = ADAPTER_REGISTRY[target]
     except KeyError as exc:  # pragma: no cover - error path
