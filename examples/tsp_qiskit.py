@@ -1,4 +1,4 @@
-from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit, Aer, execute
+from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
 from numpy import pi
 
 def build_circuit():
