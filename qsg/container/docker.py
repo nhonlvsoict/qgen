@@ -15,11 +15,15 @@ def build_image(adapter, payload: dict, image: str | None, workdir: str = ".qsg_
     payload_dir = work / "payload"
     payload_dir.mkdir()
     for name, content in payload.items():
-        (payload_dir / name).write_text(content if isinstance(content, str) else content.decode(), encoding="utf-8")
+        path = payload_dir / name
+        if isinstance(content, (bytes, bytearray)):
+            path.write_bytes(content)
+        else:
+            path.write_text(content, encoding="utf-8")
 
     # Render entrypoint
     entrypoint_tpl = (Path(__file__).parent / "templates" / "entrypoint.sh.j2").read_text()
-    entrypoint = Template(entrypoint_tpl).render(adapter_entrypoint=adapter.entrypoint())
+    entrypoint = Template(entrypoint_tpl).render(adapter_entrypoint=wrap_python_script_in_shell(adapter.entrypoint()))
     (work / "entrypoint.sh").write_text(entrypoint)
     os.chmod(work / "entrypoint.sh", 0o755)
 
@@ -32,3 +36,11 @@ def build_image(adapter, payload: dict, image: str | None, workdir: str = ".qsg_
     client = docker.from_env()
     client.images.build(path=str(work), tag=tag)
     return tag
+
+def wrap_python_script_in_shell(script: str) -> str:
+    """Wrap a Python script in a shell script to ensure it runs in the correct environment."""
+    return r"""
+python - <<'PY'
+""" + script + r"""
+PY
+"""
