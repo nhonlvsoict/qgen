@@ -1,4 +1,19 @@
 from abc import ABC, abstractmethod
+from typing import Dict, Type
+
+
+ADAPTER_REGISTRY: Dict[str, Type["Adapter"]] = {}
+
+
+def register_adapter(name: str):
+    """Class decorator to register an adapter implementation."""
+
+    def _decorator(cls: Type["Adapter"]):
+        ADAPTER_REGISTRY[name] = cls
+        return cls
+
+    return _decorator
+
 
 class Adapter(ABC):
     name: str
@@ -19,17 +34,15 @@ class Adapter(ABC):
     def entrypoint(self) -> str:
         pass
 
+
 def load_adapter(target: str, **kwargs) -> "Adapter":
-    if target == "azure":
-        from .azure_qir import AzureQIRAdapter
-        return AzureQIRAdapter(**kwargs)
-    if target == "rigetti":
-        from .rigetti_qir import RigettiQIRAdapter
-        return RigettiQIRAdapter(**kwargs)
-    if target == "ibm":
-        from .ibm_qasm3 import IBMQasm3Adapter
-        return IBMQasm3Adapter(**kwargs)
-    if target == "braket":
-        from .braket_qasm3 import BraketQasm3Adapter
-        return BraketQasm3Adapter(**kwargs)
-    raise ValueError(f"Unknown target: {target}")
+    """Instantiate a registered adapter for ``target``.
+
+    Adapters register themselves via :func:`register_adapter`.
+    """
+
+    try:
+        adapter_cls = ADAPTER_REGISTRY[target]
+    except KeyError as exc:
+        raise ValueError(f"Unknown target: {target}") from exc
+    return adapter_cls(**kwargs)
