@@ -1,4 +1,5 @@
 target: ibm
 execution_mode: job
-profile: base
+profile: 
+  IBM_TOKEN: 'YiQ-26XVf6Eo2rDMpBbhu-tdC0YM--pyyZQSKPHjiskl'
 workdir: .qsg_build
