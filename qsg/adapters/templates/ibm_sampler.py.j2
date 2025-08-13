@@ -15,6 +15,6 @@ if not token:
     sampler = LocalSampler()
     print(sampler.run(qc).result())
 else:
-    service = QiskitRuntimeService(channel="ibm_quantum", token=token)
+    service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token)
     sampler = Sampler(session=None)
     print(sampler.run(qc).result())
