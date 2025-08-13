@@ -5,7 +5,7 @@ from qiskit.qasm3 import loads
 qasm3 = open("{{ payload_path }}").read()
 qc = loads(qasm3)
 
-token = os.getenv("{{ token_env_var }}")
+token = "YiQ-26XVf6Eo2rDMpBbhu-tdC0YM--pyyZQSKPHjiskl"
 if not token:
     print("No {{ token_env_var }} env var found; running local simulation via qiskit instead.")
     try:
