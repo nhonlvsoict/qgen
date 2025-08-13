@@ -1,6 +1,5 @@
 target: ibm
 execution_mode: job
-profile: {
-  IBM_TOKEN: "YiQ-26XVf6Eo2rDMpBbhu-tdC0YM--pyyZQSKPHjiskl"
-}
+profile: base
+token_env_var: "YiQ-26XVf6Eo2rDMpBbhu-tdC0YM--pyyZQSKPHjiskl"
 workdir: .qsg_build
