@@ -1,5 +1,7 @@
 from typer.testing import CliRunner
 from qsg import cli
+import sys
+from types import SimpleNamespace
 
 
 class DummyAdapter:
@@ -58,3 +60,23 @@ def test_build_requires_target(monkeypatch, tmp_path):
     runner = CliRunner()
     result = runner.invoke(cli.app, ['build', str(src)])
     assert result.exit_code != 0
+
+
+def test_run_local_with_env(monkeypatch):
+    captured = {}
+
+    def dummy_run(image, detach=False, remove=True, environment=None):
+        captured['env'] = environment
+        return b''
+
+    dummy_client = SimpleNamespace(containers=SimpleNamespace(run=dummy_run))
+    fake_docker = SimpleNamespace(from_env=lambda: dummy_client)
+    monkeypatch.setitem(sys.modules, 'docker', fake_docker)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.app,
+        ['run-local', 'img', '-e', 'IBM_TOKEN=foo', '-e', 'X=Y'],
+    )
+    assert result.exit_code == 0
+    assert captured['env'] == {'IBM_TOKEN': 'foo', 'X': 'Y'}
