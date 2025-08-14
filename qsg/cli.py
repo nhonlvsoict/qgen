@@ -1,4 +1,5 @@
 import typer
+from typing import List
 from qsg.ir.lower import lower_to_ir
 from qsg.adapters import base as adapters_base
 from qsg.container.docker import build_image
@@ -21,11 +22,36 @@ def build(
     typer.echo(f"Built {tag}")
 
 @app.command()
-def run_local(image: str):
-    """Run the container locally for a smoke test (simulated)."""
+def run_local(
+    image: str,
+    env: List[str] = typer.Option(
+        None,
+        "--env",
+        "-e",
+        help="Environment variable(s) in KEY=VALUE format",
+    ),
+):
+    """Run the container locally for a smoke test (simulated).
+
+    Environment variables can be provided with ``-e/--env`` using the
+    ``KEY=VALUE`` format and will be passed to the container.
+    """
     import docker
+    import os
+
+    env_dict = {}
+    if env:
+        for item in env:
+            if "=" in item:
+                key, value = item.split("=", 1)
+                env_dict[key] = value
+            else:
+                env_dict[item] = os.environ.get(item)
+
     client = docker.from_env()
-    logs = client.containers.run(image, detach=False, remove=True)
+    logs = client.containers.run(
+        image, detach=False, remove=True, environment=env_dict or None
+    )
     print(logs.decode() if isinstance(logs, (bytes, bytearray)) else logs)
 
 if __name__ == "__main__":
