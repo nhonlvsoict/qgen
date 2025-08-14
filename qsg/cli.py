@@ -19,6 +19,8 @@ def build(
 ):
     if config:
         cfg = BuildConfig.from_file(config)
+        if image is not None:
+            cfg.image = image  # Override image if specified
     else:
         if target is None:
             from qsg.detect import detect_language_and_provider
