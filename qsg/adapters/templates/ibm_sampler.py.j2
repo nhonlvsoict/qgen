@@ -1,7 +1,8 @@
-import os
+import os, json, time
 from qiskit_ibm_runtime import QiskitRuntimeService, Sampler
 from qiskit.qasm3 import loads
 
+start = time.time()
 qasm3 = open("{{ payload_path }}").read()
 qc = loads(qasm3)
 
