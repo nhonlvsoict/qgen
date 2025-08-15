@@ -3,7 +3,7 @@
 
 import numpy as np
 from qiskit import QuantumCircuit, transpile
-from qiskit.assemble import assemble
+from qiskit.compiler  import assemble
 from qiskit_aer import Aer
 from qiskit.visualization import plot_histogram
 
