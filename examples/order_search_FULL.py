@@ -47,7 +47,7 @@ search_circuit = ordered_search_circuit(N, x)
 
 # Simulate the circuit
 simulator = Aer.get_backend('qasm_simulator')
-compiled_circuit = transpile(search_circuit, simulator)
+job = transpile(search_circuit, simulator)
 # job = assemble(compiled_circuit, shots=1024)
 result = simulator.run(job).result()
 
