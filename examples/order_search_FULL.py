@@ -2,7 +2,8 @@
 # The Ordered Search algorithm is a quantum algorithm designed to search for a specific number in a sorted list with a significant speedup compared to classical binary search.
 
 import numpy as np
-from qiskit import QuantumCircuit, transpile, assemble, Aer
+from qiskit import QuantumCircuit, transpile, Aer
+from qiskit.assemble import assemble
 from qiskit.visualization import plot_histogram
 
 def ordered_search_circuit(N, x):
