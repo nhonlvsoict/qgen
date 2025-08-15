@@ -3,7 +3,9 @@ from qiskit import QuantumCircuit
 
 
 def build_circuit():
-    # need to pass the param N and i as input for the circuit
+    N = 8  # Number of elements in the ordered list
+    x = 5  # The target element to search for in the list
+    # todo: need to pass the param N and i as input for the circuit
     #  Calculate the number of qubits needed for N
     num_qubits = int(np.ceil(np.log2(N)))
 
