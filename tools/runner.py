@@ -38,6 +38,19 @@ def docker_run(tag, env=None):
         data = {"raw": out}
     return data
 
+def qgen_local_run(tag, env=None):
+    env_opts = []
+    if env:
+        for k,v in env.items():
+            env_opts += ["-e", f"{k}={v}"]
+    cp = run(["qsg", "run-local"] + env_opts + [tag])
+    out = cp.stdout.strip()
+    try:
+        data = json.loads(out.splitlines()[-1])
+    except Exception:
+        data = {"raw": out}
+    return data
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exp", choices=["bv","grover"], required=True)
@@ -70,7 +83,7 @@ def main():
             t0 = time.time()
             build_image(exp_file, tag, target="ibm")
             build_s = time.time() - t0
-            data = docker_run(tag, env={})  # no token
+            data = qgen_local_run(tag, env={})  # no token
             rows.append({
                 "exp": args.exp, "n": n, "backend": "aer_local",
                 "build_s": round(build_s,3),
@@ -89,7 +102,7 @@ def main():
                 t0 = time.time()
                 build_image(exp_file, tag, target="ibm")
                 build_s = time.time() - t0
-                data = docker_run(tag, env={"IBM_TOKEN": token})
+                data = qgen_local_run(tag, env={"IBM_TOKEN": token})
                 rows.append({
                     "exp": args.exp, "n": n, "backend": "ibm_runtime_sim",
                     "build_s": round(build_s,3),
