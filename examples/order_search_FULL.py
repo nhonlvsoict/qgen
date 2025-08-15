@@ -3,7 +3,7 @@
 
 import numpy as np
 from qiskit import QuantumCircuit, transpile
-from qiskit.compiler  import assemble
+# from qiskit.compiler  import assemble
 from qiskit_aer import Aer
 from qiskit.visualization import plot_histogram
 
@@ -48,7 +48,7 @@ search_circuit = ordered_search_circuit(N, x)
 # Simulate the circuit
 simulator = Aer.get_backend('qasm_simulator')
 compiled_circuit = transpile(search_circuit, simulator)
-job = assemble(compiled_circuit, shots=1024)
+# job = assemble(compiled_circuit, shots=1024)
 result = simulator.run(job).result()
 
 # Display the measurement results
