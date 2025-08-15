@@ -15,7 +15,7 @@ if not token:
     except ImportError:
         from qiskit_ibm_runtime import Sampler as LocalSampler
     sampler = LocalSampler()
-    print(sampler.run(qc).result())
+    res = sampler.run(qc).result()
     result_payload["backend_mode"] = "aer_local"
     # For primitives v0, use quasi_dists; newer APIs may have .quasi_dists or ._pub_results
     qd = getattr(res, "quasi_dists", None)
@@ -23,7 +23,7 @@ if not token:
 else:
     service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token)
     sampler = Sampler(session=None)
-    print(sampler.run(qc).result())
+    es = sampler.run(qc).result()
     result_payload["backend_mode"] = "ibm_runtime_sim"
     qd = getattr(res, "quasi_dists", None)
     if qd: result_payload["counts"] = qd[0]
