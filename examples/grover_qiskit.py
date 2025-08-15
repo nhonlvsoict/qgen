@@ -22,7 +22,7 @@ def _diffuser(n):
     diff.x(range(n)); diff.h(range(n))
     return diff
 
-def build_circuit(n=4, marked=None):
+def build_circuit(n=16, marked=None):
     if marked is None:
         marked = "".join(str(randint(0,1)) for _ in range(n))
     iters = floor(pi/4 * sqrt(2**n))
