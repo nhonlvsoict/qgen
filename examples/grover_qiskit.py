@@ -1,15 +1,13 @@
+import os
 from qiskit import QuantumCircuit
 from math import pi, floor, sqrt
-from random import randint
 
 def _oracle(n, marked):
     oracle = QuantumCircuit(n)
     for i, bit in enumerate(marked):
         if bit == "0":
             oracle.x(i)
-    oracle.h(n-1)
-    oracle.mcx(list(range(n-1)), n-1)
-    oracle.h(n-1)
+    oracle.h(n-1); oracle.mcx(list(range(n-1)), n-1); oracle.h(n-1)
     for i, bit in enumerate(marked):
         if bit == "0":
             oracle.x(i)
@@ -22,14 +20,17 @@ def _diffuser(n):
     diff.x(range(n)); diff.h(range(n))
     return diff
 
-def build_circuit(n=16, marked=None):
+def build_circuit(n=None, marked=None):
+    if n is None:
+        n = int(os.getenv("QGEN_N", "4"))
     if marked is None:
-        marked = "".join(str(randint(0,1)) for _ in range(n))
+        default = "0"*(n-1) + "1"
+        marked = os.getenv("QGEN_MARKED", default)[:n]
     iters = floor(pi/4 * sqrt(2**n))
-    oracle = _oracle(n, marked)
-    diffuser = _diffuser(n)
     qc = QuantumCircuit(n, n)
     qc.h(range(n))
+    oracle = _oracle(n, marked)
+    diffuser = _diffuser(n)
     for _ in range(iters):
         qc.compose(oracle, inplace=True)
         qc.compose(diffuser, inplace=True)
