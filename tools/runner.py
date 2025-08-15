@@ -95,13 +95,15 @@ def main():
             build_image(exp_file, tag, target="ibm", env_vars=params)
             build_s = time.time() - t0
             data = docker_run(tag, env={})  # no token
+
+            top_dec, top_p, big_endian = parse_quantum_counts(data, n)
             rows.append({
                 "exp": args.exp, "n": n, "backend": "aer_local",
                 "build_s": round(build_s,3),
                 "submit_to_result_s": data.get("elapsed_s"),
-                "oracle_or_circuits": 1 if args.exp=="bv" else None,
-                "success_prob": None,
-                "note": json.dumps(data),
+                "oracle_or_circuits": 1 if args.exp=="bv" else int((3.14159/4) * (2**(n/2))),  # Grover iteration estimate
+                "success_prob": top_p,
+                "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
             })
 
         # IBM Runtime simulator (needs token)
@@ -115,13 +117,14 @@ def main():
                 build_image(exp_file, tag, target="ibm", env_vars=params)
                 build_s = time.time() - t0
                 data = docker_run(tag, env={"IBM_TOKEN": token})
+                top_dec, top_p, big_endian = parse_quantum_counts(data, n)
                 rows.append({
-                    "exp": args.exp, "n": n, "backend": "ibm_runtime_sim",
+                    "exp": args.exp, "n": n, "backend": "aer_local",
                     "build_s": round(build_s,3),
                     "submit_to_result_s": data.get("elapsed_s"),
-                    "oracle_or_circuits": 1 if args.exp=="bv" else None,
-                    "success_prob": None,
-                    "note": json.dumps(data),
+                    "oracle_or_circuits": 1 if args.exp=="bv" else int((3.14159/4) * (2**(n/2))),  # Grover iteration estimate
+                    "success_prob": top_p,
+                    "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
                 })
 
     with open(args.csv, "w", newline="") as f:
@@ -147,3 +150,16 @@ def qgen_local_run(tag, env=None):
     except Exception:
         data = {"raw": out}
     return data
+
+def parse_quantum_counts(data, n):
+    # data like {"counts": {"22956": 0.999..., ...}}
+    counts = data.get("counts") or {}
+    if not counts:
+        return None, None, None
+    # top outcome (decimal) and prob
+    top_dec, top_p = max(((int(k), v) for k, v in counts.items()), key=lambda kv: kv[1])
+    # to bitstring (little-endian in Qiskit’s readout)
+    b = format(top_dec, f"0{n}b")
+    # flip to big-endian to compare with our 'marked'
+    big_endian = b[::-1]
+    return top_dec, top_p, big_endian
