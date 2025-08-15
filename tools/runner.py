@@ -53,6 +53,19 @@ def docker_run(tag, env=None):
     out = cp.stdout.strip()
     try: return json.loads(out.splitlines()[-1])
     except Exception: return {"raw": out}
+    
+def parse_quantum_counts(data, n):
+    # data like {"counts": {"22956": 0.999..., ...}}
+    counts = data.get("counts") or {}
+    if not counts:
+        return None, None, None
+    # top outcome (decimal) and prob
+    top_dec, top_p = max(((int(k), v) for k, v in counts.items()), key=lambda kv: kv[1])
+    # to bitstring (little-endian in Qiskit’s readout)
+    b = format(top_dec, f"0{n}b")
+    # flip to big-endian to compare with our 'marked'
+    big_endian = b[::-1]
+    return top_dec, top_p, big_endian
 
 def main():
     ap = argparse.ArgumentParser()
@@ -151,15 +164,3 @@ def qgen_local_run(tag, env=None):
         data = {"raw": out}
     return data
 
-def parse_quantum_counts(data, n):
-    # data like {"counts": {"22956": 0.999..., ...}}
-    counts = data.get("counts") or {}
-    if not counts:
-        return None, None, None
-    # top outcome (decimal) and prob
-    top_dec, top_p = max(((int(k), v) for k, v in counts.items()), key=lambda kv: kv[1])
-    # to bitstring (little-endian in Qiskit’s readout)
-    b = format(top_dec, f"0{n}b")
-    # flip to big-endian to compare with our 'marked'
-    big_endian = b[::-1]
-    return top_dec, top_p, big_endian
