@@ -23,9 +23,12 @@ def _diffuser(n):
 def build_circuit(n=None, marked=None):
     if n is None:
         n = int(os.getenv("QGEN_N", "4"))
+     
+        print(f"Using n={n} from environment variable QGEN_N")
     if marked is None:
         default = "0"*(n-1) + "1"
         marked = os.getenv("QGEN_MARKED", default)[:n]
+        print(f"Using marked={marked} from environment variable QGEN_MARKED")
     iters = floor(pi/4 * sqrt(2**n))
     qc = QuantumCircuit(n, n)
     qc.h(range(n))
