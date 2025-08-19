@@ -99,6 +99,7 @@ def main():
                 "build_s": 0.0, "submit_to_result_s": res["elapsed_s"],
                 "oracle_or_circuits": res["oracle_calls"], "success_prob": 1.0,
                 "note": res["note"],
+                "counts": None,
             })
 
         # Aer (local) via IBM adapter (no token)
@@ -108,6 +109,7 @@ def main():
             build_image(exp_file, tag, target="ibm", env_vars=params)
             build_s = time.time() - t0
             data = docker_run(tag, env={})  # no token
+            counts = data.get("counts")
 
             top_dec, top_p, big_endian = parse_quantum_counts(data, n)
             rows.append({
@@ -117,6 +119,7 @@ def main():
                 "oracle_or_circuits": 1 if args.exp=="bv" else int((3.14159/4) * (2**(n/2))),  # Grover iteration estimate
                 "success_prob": top_p,
                 "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
+                "counts": json.dumps(counts) if counts else None,
             })
 
         # IBM Runtime simulator (needs token)
@@ -130,6 +133,7 @@ def main():
                 build_image(exp_file, tag, target="ibm", env_vars=params)
                 build_s = time.time() - t0
                 data = docker_run(tag, env={"IBM_TOKEN": token})
+                counts = data.get("counts")
                 top_dec, top_p, big_endian = parse_quantum_counts(data, n)
                 rows.append({
                     "exp": args.exp, "n": n, "backend": "aer_local",
@@ -138,11 +142,12 @@ def main():
                     "oracle_or_circuits": 1 if args.exp=="bv" else int((3.14159/4) * (2**(n/2))),  # Grover iteration estimate
                     "success_prob": top_p,
                     "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
+                    "counts": json.dumps(counts) if counts else None,
                 })
 
     with open(args.csv, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=[
-            "exp","n","backend","build_s","submit_to_result_s","oracle_or_circuits","success_prob","note"
+            "exp","n","backend","build_s","submit_to_result_s","oracle_or_circuits","success_prob","note","counts"
         ])
         w.writeheader(); w.writerows(rows)
     print("Wrote", args.csv)
