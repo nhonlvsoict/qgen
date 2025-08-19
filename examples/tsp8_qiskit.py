@@ -68,7 +68,8 @@ def build_circuit():
     # Inverse QFT 
     qc.barrier()
     qft = QFT(num_qubits=len(unit), inverse=True, insert_barriers=True, do_swaps=False, name='Inverse QFT')
-    qc.append(qft, qc.qubits[:len(unit)])
+    # decompose the QFT circuit into its basic gates before appending.
+    qc.append(qft.decompose(), qc.qubits[:len(unit)])
     qc.barrier()
     #
 
