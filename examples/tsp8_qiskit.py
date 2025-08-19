@@ -2,6 +2,10 @@ from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit.circuit.library import QFT
 from numpy import pi
 
+# Storing the eigenvalues in a list
+eigen_values = ["11000110", "10001101", "11001001", "10000111", "01001110", "01001011"]
+
+
 def controlled_unitary(qc, qubits: list, phases: list): # x,y,z = Specific Qubit; a,b,c,d = Phases
     qc.cp(phases[2]-phases[0], qubits[0], qubits[1]) # controlled-U1(c-a)
     qc.p(phases[0], qubits[0]) # U1(a)
