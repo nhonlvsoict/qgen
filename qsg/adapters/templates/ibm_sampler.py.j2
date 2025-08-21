@@ -22,7 +22,8 @@ if not token:
     qd = getattr(res, "quasi_dists", None)
     if qd: result_payload["counts"] = qd[0]
 else:
-    service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token)
+    #ibm_quantum_platform
+    service = QiskitRuntimeService(channel="qasm_simulator", token=token)
     sampler = Sampler(session=None)
     es = sampler.run(qc).result()
     result_payload["backend_mode"] = "ibm_runtime_sim"
