@@ -23,7 +23,7 @@ if not token:
     if qd: result_payload["counts"] = qd[0]
 else:
     #ibm_quantum_platform
-    service = QiskitRuntimeService(channel="qasm_simulator", token=token)
+    service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token)
     sampler = Sampler(session=None)
     es = sampler.run(qc).result()
     result_payload["backend_mode"] = "ibm_runtime_sim"
