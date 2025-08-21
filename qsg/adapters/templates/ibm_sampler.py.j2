@@ -121,7 +121,7 @@ else:
     service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token, instance="quantum")
     backend = service.least_busy(operational=True, simulator=False)
     sampler = Sampler(mode=backend)
-    sampler.options.default_shots = 1024  # Options can be set using auto-complete.
+    sampler.options.default_shots = 8192  # Options can be set using auto-complete.
 
     pm = generate_preset_pass_manager(backend=backend, optimization_level=1)
     isa_circuit = pm.run(qc)
