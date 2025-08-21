@@ -123,6 +123,7 @@ def main():
                 "oracle_or_circuits": res["oracle_calls"], "success_prob": 1.0,
                 "note": res["note"],
                 "counts": None,
+                "properties": None,
             })
 
         # Aer (local) via IBM adapter (no token)
@@ -147,6 +148,7 @@ def main():
                 "success_prob": top_p,
                 "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
                 "counts": json.dumps(counts) if counts else None,
+                "properties": json.dumps(data.get("properties")) if data.get("properties") else None,
             })
 
         # IBM Runtime simulator (needs token)
@@ -174,11 +176,12 @@ def main():
                     "success_prob": top_p,
                     "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
                     "counts": json.dumps(counts) if counts else None,
+                    "properties": json.dumps(data.get("properties")) if data.get("properties") else None,
                 })
 
     with open(args.csv, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=[
-            "exp","n","backend","build_s","submit_to_result_s","oracle_or_circuits","success_prob","note","counts"
+            "exp","n","backend","build_s","submit_to_result_s","oracle_or_circuits","success_prob","note","counts", "properties"
         ])
         w.writeheader(); w.writerows(rows)
     print("Wrote", args.csv)
