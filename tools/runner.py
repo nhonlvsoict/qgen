@@ -153,7 +153,7 @@ def main():
                 "success_prob": top_p,
                 "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
                 "counts": json.dumps(counts) if counts else None,
-                "properties": data.get("properties").to_dict() if data.get("properties") else None,
+                "properties": json.dumps(data.get("properties")) if data.get("properties") else None,
             })
 
         # IBM Runtime simulator (needs token)
@@ -181,7 +181,7 @@ def main():
                     "success_prob": top_p,
                     "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
                     "counts": json.dumps(counts) if counts else None,
-                    "properties": data.get("properties").to_dict() if data.get("properties") else None,
+                    "properties": json.dumps(data.get("properties")) if data.get("properties") else None,
                 })
 
     with open(args.csv, "w", newline="") as f:

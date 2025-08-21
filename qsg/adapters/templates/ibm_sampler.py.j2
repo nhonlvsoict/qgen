@@ -42,7 +42,7 @@ else:
 
     res = job.result()
     result_payload["backend_mode"] = "ibmq_qasm"
-    result_payload["properties"] = props
+    result_payload["properties"] = props.to_dict()
     qd = getattr(res, "quasi_dists", None)
     if qd: result_payload["counts"] = qd[0]
 
