@@ -81,7 +81,7 @@ def build_circuit():
     #
 
     # Draw
-    qc.draw()
+    # qc.draw()
     return qc
 
 

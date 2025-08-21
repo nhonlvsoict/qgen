@@ -1,5 +1,6 @@
 import os, json, time
-from qiskit_ibm_runtime import QiskitRuntimeService, Sampler
+
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit.qasm3 import loads
 
 start = time.time()
@@ -10,6 +11,9 @@ token = os.getenv("{{ token_env_var }}")
 result_payload = {"backend_mode": None, "counts": None, "elapsed_s": None}
 
 if not token:
+    # Local simulation
+    # If the token is not set, we will run a local simulation using Qiskit
+    # This is useful for testing or when the IBM Quantum Experience is not available
     print("No {{ token_env_var }} env var found; running local simulation via qiskit instead.")
     try:
         from qiskit_aer.primitives import Sampler as LocalSampler
@@ -23,11 +27,15 @@ if not token:
     if qd: result_payload["counts"] = qd[0]
 else:
     #ibm_quantum_platform
+    from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
     service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token, instance="quantum")
     backend = service.least_busy(operational=True, simulator=False)
     sampler = Sampler(mode=backend)
-    job = sampler.run([qc])
+    sampler.options.default_shots = 1024  # Options can be set using auto-complete.
 
+    pm = generate_preset_pass_manager(backend=backend, optimization_level=1)
+    isa_circuit = pm.run(qc)
+    job = sampler.run([isa_circuit])
     
     # Get job properties
     props = job.properties()
