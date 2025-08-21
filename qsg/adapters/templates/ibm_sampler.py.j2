@@ -26,7 +26,7 @@ else:
     service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token, instance="quantum")
     backend = service.least_busy(operational=True, simulator=False)
     sampler = Sampler(mode=backend)
-    job = sampler.run(qc)
+    job = sampler.run([qc])
 
     
     # Get job properties
