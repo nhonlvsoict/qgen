@@ -122,6 +122,7 @@ def main():
                 build_s = time.time() - t0
             else:
                 build_s = 0.0
+                print(f"Reuse {tag}")
             data = docker_run(tag, env={})  # no token
             counts = data.get("counts")
 
@@ -149,6 +150,7 @@ def main():
                     build_s = time.time() - t0
                 else:
                     build_s = 0.0
+                    print(f"Reuse {tag}")
                 data = docker_run(tag, env={"IBM_TOKEN": token})
                 counts = data.get("counts")
                 top_dec, top_p, big_endian = parse_quantum_counts(data, n)
