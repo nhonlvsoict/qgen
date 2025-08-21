@@ -81,7 +81,12 @@ def qgen_local_run(tag, env=None):
     if env:
         for k,v in env.items():
             env_opts += ["-e", f"{k}={v}"]
-    cp = run(["qsg", "run-local"] + env_opts + [tag])
+    try:
+        cp = run(["qsg", "run-local"] + env_opts + [tag])
+    except subprocess.CalledProcessError as e:
+        print(e.stdout)
+        print(e.stderr)
+        raise
     out = cp.stdout.strip()
     try:
         data = json.loads(out.splitlines()[-1])
