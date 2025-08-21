@@ -3,10 +3,11 @@ import os, json, time
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit.qasm3 import loads
 
-def props_to_dict(props):
+def props_to_dict(props, job_result=None):
     """
     Safely extract only timing fields (compiling, queue, running, total)
-    from job.properties(), in a JSON-serialisable dict.
+    from job.properties(), and fall back to execution spans in job_result
+    to compute running_s when needed. Returns a small JSON-serialisable dict.
     """
     out = {}
     key_map = {
@@ -18,15 +19,14 @@ def props_to_dict(props):
 
     try:
         timing_sources = []
-        # Try to get `props.timing`
+        # props.timing (dict)
         try:
             t = getattr(props, "timing", None)
             if isinstance(t, dict):
                 timing_sources.append(t)
         except Exception:
             pass
-
-        # Try to get `props.metadata["timing"]`
+        # props.metadata["timing"] (dict)
         try:
             meta = getattr(props, "metadata", None)
             if isinstance(meta, dict) and isinstance(meta.get("timing"), dict):
@@ -44,14 +44,44 @@ def props_to_dict(props):
                             raise StopIteration
                     except Exception:
                         continue
-                if out_key in out:
-                    break
+            # swallow StopIteration per key
+
+        # Fallback/add: compute running_s from execution spans in job_result
+        if ("running_s" not in out) and (job_result is not None):
+            try:
+                if hasattr(job_result, "metadata") and "execution" in job_result.metadata:
+                    exec_meta = job_result.metadata["execution"]
+                    spans = exec_meta.get("execution_spans")
+                    if spans:
+                        total_run = 0.0
+                        for sp in spans:
+                            # support both object-like and dict-like spans
+                            start_raw = getattr(sp, "start", None) if not isinstance(sp, dict) else sp.get("start")
+                            stop_raw  = getattr(sp, "stop", None)  if not isinstance(sp, dict) else sp.get("stop")
+                            if start_raw and stop_raw:
+                                try:
+                                    t0 = datetime.fromisoformat(str(start_raw))
+                                    t1 = datetime.fromisoformat(str(stop_raw))
+                                except Exception:
+                                    # looser parser if needed
+                                    try:
+                                        from dateutil.parser import isoparse
+                                        t0 = isoparse(str(start_raw))
+                                        t1 = isoparse(str(stop_raw))
+                                    except Exception:
+                                        t0 = t1 = None
+                                if t0 and t1:
+                                    total_run += (t1 - t0).total_seconds()
+                        if total_run > 0:
+                            out["running_s"] = round(total_run, 6)
+            except Exception:
+                pass
 
     except Exception as e:
-        out["error"] = f"Could not extract timings: {str(e)}"
+        out["error"] = f"Could not extract timings: {e}"
 
     return out or None
-    
+
 def extract_counts_v2(primitive_result):
     """Get counts dict from Primitives v2 Sampler result."""
     try:
