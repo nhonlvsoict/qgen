@@ -51,6 +51,37 @@ def props_to_dict(props, job_result=None):
 
     return out or None
 
+def get_times_from_props(props, job_result=None):
+    """
+    Extracts timing fields from job properties.
+    Returns a dict with keys: compiling_s, queue_s, running_s, total_s.
+    If job_result is provided, it will also extract execution spans.
+    """
+    try:
+        if job_result is not None and hasattr(job_result, "metadata"):
+            exec_meta = job_result.metadata.get("execution", {})
+            spans = exec_meta.get("execution_spans")
+            total_run = 0.0
+            if spans:
+                for sp in spans:
+                    # support both object-like and dict-like spans
+                    start_raw = getattr(sp, "start", None) if not isinstance(sp, dict) else sp.get("start")
+                    stop_raw  = getattr(sp, "stop", None)  if not isinstance(sp, dict) else sp.get("stop")
+                    size_raw  = getattr(sp, "size", None)  if not isinstance(sp, dict) else sp.get("size")
+                    span_dict = {"start": str(start_raw), "stop": str(stop_raw), "size": size_raw}
+                    # compute duration if possible
+                    try:
+                        t0 = datetime.fromisoformat(str(start_raw))
+                        t1 = datetime.fromisoformat(str(stop_raw))
+                        total_run = round((t1 - t0).total_seconds(), 6)
+                        
+                    except Exception:
+                        pass
+            return total_run
+    except Exception:
+        pass
+    return None
+
 def extract_counts_v2(primitive_result):
     """Get counts dict from Primitives v2 Sampler result."""
     try:
@@ -100,7 +131,7 @@ else:
 
     res = job.result()
     result_payload["backend_mode"] = "ibmq_qasm"
-    result_payload["properties"] = props_to_dict(props)
+    result_payload["properties"] = props_to_dict(props, res)
     result_payload["counts"] = extract_counts_v2(res)
 
 
