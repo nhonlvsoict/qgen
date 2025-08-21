@@ -76,6 +76,18 @@ def parse_quantum_counts(data, n):
     big_endian = b[::-1]
     return top_dec, top_p, big_endian
 
+def qgen_local_run(tag, env=None):
+    env_opts = []
+    if env:
+        for k,v in env.items():
+            env_opts += ["-e", f"{k}={v}"]
+    cp = run(["qsg", "run-local"] + env_opts + [tag])
+    out = cp.stdout.strip()
+    try:
+        data = json.loads(out.splitlines()[-1])
+    except Exception:
+        data = {"raw": out}
+    return data
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exp", choices=["bv","grover"], required=True)
@@ -175,16 +187,4 @@ if __name__ == "__main__":
     main()
 
 
-def qgen_local_run(tag, env=None):
-    env_opts = []
-    if env:
-        for k,v in env.items():
-            env_opts += ["-e", f"{k}={v}"]
-    cp = run(["qsg", "run-local"] + env_opts + [tag])
-    out = cp.stdout.strip()
-    try:
-        data = json.loads(out.splitlines()[-1])
-    except Exception:
-        data = {"raw": out}
-    return data
 
