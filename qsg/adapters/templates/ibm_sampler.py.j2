@@ -3,6 +3,55 @@ import os, json, time
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit.qasm3 import loads
 
+def props_to_dict(props):
+    """
+    Safely extract only timing fields (compiling, queue, running, total)
+    from job.properties(), in a JSON-serialisable dict.
+    """
+    out = {}
+    key_map = {
+        "compiling_s": ["compilation_time", "compile_time", "transpile_time"],
+        "queue_s":     ["queue_time"],
+        "running_s":   ["run_time", "execution_time"],
+        "total_s":     ["total_time", "wall_time", "elapsed_time"],
+    }
+
+    try:
+        timing_sources = []
+        # Try to get `props.timing`
+        try:
+            t = getattr(props, "timing", None)
+            if isinstance(t, dict):
+                timing_sources.append(t)
+        except Exception:
+            pass
+
+        # Try to get `props.metadata["timing"]`
+        try:
+            meta = getattr(props, "metadata", None)
+            if isinstance(meta, dict) and isinstance(meta.get("timing"), dict):
+                timing_sources.append(meta["timing"])
+        except Exception:
+            pass
+
+        # Extract known timing keys
+        for out_key, candidates in key_map.items():
+            for cand_key in candidates:
+                for src in timing_sources:
+                    try:
+                        if cand_key in src and src[cand_key] is not None:
+                            out[out_key] = round(float(src[cand_key]), 6)
+                            raise StopIteration
+                    except Exception:
+                        continue
+                if out_key in out:
+                    break
+
+    except Exception as e:
+        out["error"] = f"Could not extract timings: {str(e)}"
+
+    return out or None
+
 start = time.time()
 qasm3 = open("{{ payload_path }}").read()
 qc = loads(qasm3)
@@ -42,7 +91,7 @@ else:
 
     res = job.result()
     result_payload["backend_mode"] = "ibmq_qasm"
-    result_payload["properties"] = props.to_dict()
+    result_payload["properties"] = props_to_dict(props)
     qd = getattr(res, "quasi_dists", None)
     if qd: result_payload["counts"] = qd[0]
 
