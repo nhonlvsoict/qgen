@@ -174,7 +174,7 @@ def main():
                 counts = data.get("counts")
                 top_dec, top_p, big_endian = parse_quantum_counts(data, n)
                 rows.append({
-                    "exp": args.exp, "n": n, "backend": "aer_local",
+                    "exp": args.exp, "n": n, "backend": "ibmq_qasm",
                     "build_s": round(build_s,3),
                     "submit_to_result_s": data.get("elapsed_s"),
                     "oracle_or_circuits": 1 if args.exp=="bv" else int((3.14159/4) * (2**(n/2))),  # Grover iteration estimate

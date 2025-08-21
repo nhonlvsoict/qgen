@@ -51,7 +51,17 @@ def props_to_dict(props):
         out["error"] = f"Could not extract timings: {str(e)}"
 
     return out or None
-
+    
+def extract_counts_v2(primitive_result):
+    """Get counts dict from Primitives v2 Sampler result."""
+    try:
+        pub = primitive_result[0]  # SamplerPubResult
+        return pub.join_data().get_counts()
+    except Exception:
+        try:
+            return pub.data.c.get_counts()  # common reg name
+        except Exception:
+            return None
 start = time.time()
 qasm3 = open("{{ payload_path }}").read()
 qc = loads(qasm3)
@@ -92,8 +102,9 @@ else:
     res = job.result()
     result_payload["backend_mode"] = "ibmq_qasm"
     result_payload["properties"] = props_to_dict(props)
-    qd = getattr(res, "quasi_dists", None)
-    if qd: result_payload["counts"] = qd[0]
+    result_payload["counts"] = extract_counts_v2(res)
+
+
 
 result_payload["elapsed_s"] = round(time.time() - start, 4)
 print(json.dumps(result_payload))
