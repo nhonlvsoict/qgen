@@ -49,8 +49,7 @@ def build_circuit(n=None, marked=None):
         default = "0"*(n-1) + "1"
         marked = os.getenv("QGEN_MARKED", default)[:n]
         print(f"Using marked={marked} from environment variable QGEN_MARKED")
-    if iters is None:
-        iters = max(1, min(2, floor(pi/4 * sqrt(2**n))))  # hardware-friendly
+    iters = max(1, min(2, floor(pi/4 * sqrt(2**n))))  # hardware-friendly
     qc = QuantumCircuit(n+1, n)  # +1 ancilla
     qc.h(range(n))
     O = oracle_with_ancilla(n, marked)
