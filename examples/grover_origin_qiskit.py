@@ -65,6 +65,12 @@ def build_circuit(n=None, marked=None):
     qc = QuantumCircuit(grover_op.num_qubits)
     # Create even superposition of all basis states
     qc.h(range(grover_op.num_qubits))
+
+    # Compute the optimal number of Grover iterations
+    optimal_num_iterations = math.floor(
+    math.pi
+    / (4 * math.asin(math.sqrt(len(marked) / 2**grover_op.num_qubits)))
+    )   
     # Apply Grover operator the optimal number of times
     qc.compose(grover_op.power(optimal_num_iterations), inplace=True)
     # Measure all qubits
