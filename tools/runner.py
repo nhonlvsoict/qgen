@@ -95,7 +95,7 @@ def qgen_local_run(tag, env=None):
     return data
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--exp", choices=["bv","grover","grover_new"], required=True)
+    ap.add_argument("--exp", choices=["bv","grover","grover_new","grover_origin"], required=True)
     ap.add_argument("--ns", nargs="+", type=int, required=True)
     ap.add_argument("--modes", nargs="+", choices=["classical","aer","ibm"], required=True)
     ap.add_argument("--image-prefix", default="qsg/exp")
