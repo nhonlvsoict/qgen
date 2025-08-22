@@ -1,5 +1,6 @@
 # Built-in modules
 import math
+
  
 # Imports from Qiskit
 from qiskit import QuantumCircuit
@@ -70,3 +71,4 @@ def build_circuit(n=None, marked=None):
     qc.measure_all()
 
     return qc
+
