@@ -67,10 +67,13 @@ def build_circuit(n=None, marked=None):
     qc.h(range(grover_op.num_qubits))
 
     # Compute the optimal number of Grover iterations
-    optimal_num_iterations = math.floor(
-    math.pi
-    / (4 * math.asin(math.sqrt(len(marked) / 2**grover_op.num_qubits)))
-    )   
+    # optimal_num_iterations = math.floor(
+    # math.pi
+    # / (4 * math.asin(math.sqrt(len(marked) / 2**grover_op.num_qubits)))
+    # )   
+    k = 1 if isinstance(marked, str) else len(marked)
+    N = 2 ** grover_op.num_qubits
+    optimal_num_iterations = math.floor(math.pi / (4 * math.asin(math.sqrt(k / N))))
     # Apply Grover operator the optimal number of times
     qc.compose(grover_op.power(optimal_num_iterations), inplace=True)
     # Measure all qubits
