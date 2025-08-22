@@ -29,7 +29,8 @@ def build_circuit(n=None, marked=None):
         default = "0"*(n-1) + "1"
         marked = os.getenv("QGEN_MARKED", default)[:n]
         print(f"Using marked={marked} from environment variable QGEN_MARKED")
-    iters = floor(pi/4 * sqrt(2**n))
+    # iters = floor(pi/4 * sqrt(2**n))
+    iters = max(1, min(2, floor(pi/4 * sqrt(2**n))))  # clamp to 1..2 for hardware
     qc = QuantumCircuit(n, n)
     qc.h(range(n))
     oracle = _oracle(n, marked)
