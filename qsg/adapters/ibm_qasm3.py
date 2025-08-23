@@ -1,8 +1,10 @@
 from .base import Adapter
 from .template_manager import render as render_template
+from . import register_adapter
 
+
+@register_adapter("ibm")
 class IBMQasm3Adapter(Adapter):
-    name = "ibm"
 
     def __init__(self, **kwargs):
         # Store kwargs if needed, or just accept them to avoid errors

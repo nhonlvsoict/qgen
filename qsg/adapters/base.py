@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 
+from . import ADAPTER_REGISTRY
+
+
 class Adapter(ABC):
     name: str
 
@@ -19,17 +22,15 @@ class Adapter(ABC):
     def entrypoint(self) -> str:
         pass
 
+
 def load_adapter(target: str, **kwargs) -> "Adapter":
-    if target == "azure":
-        from .azure_qir import AzureQIRAdapter
-        return AzureQIRAdapter(**kwargs)
-    if target == "rigetti":
-        from .rigetti_qir import RigettiQIRAdapter
-        return RigettiQIRAdapter(**kwargs)
-    if target == "ibm":
-        from .ibm_qasm3 import IBMQasm3Adapter
-        return IBMQasm3Adapter(**kwargs)
-    if target == "braket":
-        from .braket_qasm3 import BraketQasm3Adapter
-        return BraketQasm3Adapter(**kwargs)
-    raise ValueError(f"Unknown target: {target}")
+    """Instantiate an adapter for ``target`` using the registration registry."""
+
+    # print all ADAPTER_REGISTRY here for debugging purposes
+    print("ADAPTER_REGISTRY:", ADAPTER_REGISTRY)
+
+    try:
+        adapter_cls = ADAPTER_REGISTRY[target]
+    except KeyError as exc:  # pragma: no cover - error path
+        raise ValueError(f"Unknown target: {target}") from exc
+    return adapter_cls(**kwargs)
