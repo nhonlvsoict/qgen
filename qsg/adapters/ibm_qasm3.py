@@ -1,6 +1,8 @@
-from .base import Adapter
+from .base import Adapter, register_adapter
 from .template_manager import render as render_template
 
+
+@register_adapter("ibm")
 class IBMQasm3Adapter(Adapter):
     name = "ibm"
 

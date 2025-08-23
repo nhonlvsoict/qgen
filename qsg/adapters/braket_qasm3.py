@@ -1,5 +1,7 @@
-from .base import Adapter
+from .base import Adapter, register_adapter
 
+
+@register_adapter("braket")
 class BraketQasm3Adapter(Adapter):
     name = "braket"
 
