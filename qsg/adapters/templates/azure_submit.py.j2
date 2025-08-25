@@ -6,8 +6,9 @@ subscription_id = os.getenv("AZURE_QUANTUM_SUBSCRIPTION_ID")
 resource_group = os.getenv("AZURE_QUANTUM_RESOURCE_GROUP")
 workspace_name = os.getenv("AZURE_QUANTUM_WORKSPACE_NAME")
 location = os.getenv("AZURE_QUANTUM_LOCATION")
+api_key = os.getenv("AZURE_QUANTUM_API_KEY")
 
-if not all([subscription_id, resource_group, workspace_name, location]):
+if not all([subscription_id, resource_group, workspace_name, location, api_key]):
     raise RuntimeError(
         "Missing Azure Quantum workspace configuration environment variables"
     )
@@ -19,6 +20,7 @@ workspace = Workspace(
     name=workspace_name,
     location=location,
     credential=credential,
+    api_key=api_key
 )
 
 with open("{{ payload_path }}", "rb") as f:
