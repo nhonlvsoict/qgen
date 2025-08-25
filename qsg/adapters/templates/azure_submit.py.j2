@@ -24,3 +24,8 @@ job = target.submit(
     input_params={"entryPoint": "ENTRYPOINT__main", "arguments": [], "shots": 8192},
 )
 print("Submitted job:", job.id)
+
+job.wait_until_completed()
+result = job.get_results()
+print(f"Job status: {job.status}")
+print(f"Job result: {result}")
