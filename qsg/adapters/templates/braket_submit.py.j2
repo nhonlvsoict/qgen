@@ -1,4 +1,5 @@
 import json, os, boto3, sys
+import re
 from braket.aws import AwsDevice, AwsSession
 from braket.ir.openqasm import Program
 from braket.circuits import Circuit
