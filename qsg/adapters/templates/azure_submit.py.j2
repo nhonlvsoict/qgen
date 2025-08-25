@@ -21,6 +21,6 @@ job = target.submit(
     input_data_format="qir.v1",
     output_data_format="microsoft.quantum-results.v1",
     name="my-qir-job",
-    input_params={"entryPoint": "ENTRYPOINT__main", "arguments": [], "count": 8192},
+    input_params={"entryPoint": "ENTRYPOINT__main", "arguments": [], "shots": 8192},
 )
 print("Submitted job:", job.id)
