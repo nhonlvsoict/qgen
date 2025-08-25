@@ -17,8 +17,8 @@ qc = load_circuit(payload_path)
 
 backend = AWSBraketProvider().get_backend("Emerald")
 
-tqc = transpile(qc, backend=backend, optimization_level=3)
-job = backend.run(tqc, shots=8192)
+#tqc = transpile(qc, backend=backend, optimization_level=3)
+job = backend.run(qc, shots=8192)
 
 print("Job ID:", job.job_id())
 
