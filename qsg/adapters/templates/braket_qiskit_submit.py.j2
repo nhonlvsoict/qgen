@@ -3,7 +3,7 @@ from importlib.util import spec_from_file_location, module_from_spec
 from datetime import datetime, timezone
 
 import boto3
-from braket.aws import AwsSession, AwsQuantumTask
+from braket.aws import AwsQuantumTask
 from qiskit_braket_provider import BraketProvider
 from qiskit import transpile
 
@@ -12,7 +12,6 @@ def _to_dt(x):
     if not x:
         return None
     try:
-        # Braket returns e.g. "2025-08-26T07:15:22.123Z"
         return datetime.fromisoformat(str(x).replace("Z", "+00:00")).astimezone(timezone.utc)
     except Exception:
         return None
@@ -26,41 +25,22 @@ def load_circuit(path: str):
     return module.build_circuit()
 
 def monitor_until_running_and_done(task: AwsQuantumTask, poll_s: float = 2.0):
-    """
-    Polls the Braket task state to detect when it first becomes RUNNING,
-    then waits for completion. Returns (created_at, began_at, ended_at).
-    """
-    meta = task.metadata()
-    created_at = _to_dt(meta.get("createdAt"))
+    created_at = _to_dt(task.metadata().get("createdAt"))
     began_at = None
-    ended_at = _to_dt(meta.get("endedAt"))
+    ended_at = None
 
-    # If already completed very fast, ended_at may be present immediately
-    if ended_at and not began_at:
-        # we didn't observe RUNNING; leave began_at=None
-        return created_at, began_at, ended_at
-
-    # Poll until we see RUNNING or a terminal state
-    seen_states = set()
     while True:
         state = task.state()
         now = datetime.now(timezone.utc)
-
-        if state not in seen_states:
-            # remember the first time we see each state
-            seen_states.add(state)
-            if state == "RUNNING" and began_at is None:
-                began_at = now
-
+        if state == "RUNNING" and began_at is None:
+            began_at = now
         if state in ("COMPLETED", "FAILED", "CANCELLING", "CANCELLED"):
-            # refresh metadata to get endedAt
             meta = task.metadata()
             ended_at = _to_dt(meta.get("endedAt")) or now
             return created_at, began_at, ended_at
-
         time.sleep(poll_s)
 
-def spans_from_timestamps(created_at, began_at, ended_at):
+def spans_from_timestamps(created_at, began_at, ended_at, wall_clock_start):
     out = {}
     if created_at and began_at:
         out["queue_s"] = (began_at - created_at).total_seconds()
@@ -68,45 +48,31 @@ def spans_from_timestamps(created_at, began_at, ended_at):
         out["running_s"] = (ended_at - began_at).total_seconds()
     if created_at and ended_at:
         out["total_s"] = (ended_at - created_at).total_seconds()
-    return out or None
+    out["total_wall_clock_s"] = round(time.perf_counter() - wall_clock_start, 6)
+    return out
 
 # ---------- main ----------
 payload_path = "{{ payload_path }}"
-region = os.environ.get("AWS_DEFAULT_REGION", "us-west-1")  # Rigetti Ankaa-3
 shots = 8192
 
 qc = load_circuit(payload_path)
-
-# You can transpile if you want; leave commented if you prefer the provider to handle it
 # qc = transpile(qc, optimization_level=3)
 
-# Bind provider to us-west-1 so it doesn't scan other regions
-boto = boto3.Session(region_name=region)
-aws_sess = AwsSession(boto_session=boto)
-provider = BraketProvider(aws_session=aws_sess)
+# Provider with no args (region comes from AWS_DEFAULT_REGION or ~/.aws/config)
+provider = BraketProvider()
 
-backend = provider.get_backend("Garnet")  # Rigetti QPU (human-readable name)
+backend = provider.get_backend("Ankaa-3")  # Rigetti backend by name
 
-# Wall-clock start
 t0 = time.perf_counter()
-
 job = backend.run(qc, shots=shots)
 print("Job ID:", job.job_id())
 
-# Get the underlying Braket task by ARN and monitor for timing
-task_arn = job.job_id()  # Braket task ARN
-task = AwsQuantumTask(arn=task_arn, aws_session=aws_sess)
+# Underlying Braket task ARN is the job_id
+task = AwsQuantumTask(job.job_id())
 created_at, began_at, ended_at = monitor_until_running_and_done(task)
 
-# Fetch result (Qiskit Result) and convert to counts dict
 result = job.result()
 counts = result.get_counts()
+spans = spans_from_timestamps(created_at, began_at, ended_at, t0)
 
-# Compute time properties
-spans = spans_from_timestamps(created_at, began_at, ended_at)
-if not spans:
-    spans = {}
-spans["total_wall_clock_s"] = round(time.perf_counter() - t0, 6)
-
-# Emit a compact JSON similar to your Azure payload
 print(json.dumps({"counts": counts, "properties": spans}))
