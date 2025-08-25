@@ -19,6 +19,14 @@ for ln in src.splitlines():
     clean_lines.append(ln)
 src = "\n".join(clean_lines).replace("OPENQASM 3.0;", "OPENQASM 3;")
 
+# Map Qiskit names to Braket OQ3 names
+src = re.sub(r'\bcp\s*\(', 'cphaseshift(', src)   # controlled phase
+src = re.sub(r'\bp\s*\(',  'phaseshift(', src)    # phase
+src = re.sub(r'\bcx\b',     'cnot', src)          # CNOT gate token
+
+# Optional: drop identity ops if present (Braket doesn’t need them)
+src = re.sub(r'^\s*id\b[^\n]*\n', '', src, flags=re.IGNORECASE | re.MULTILINE)
+
 # Validate and normalize via Braket's Circuit parser
 try:
     circ = Circuit.from_ir(src)                 # raises if still unsupported
