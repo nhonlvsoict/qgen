@@ -1,0 +1,17 @@
+import json
+from braket.aws import AwsDevice, AwsSession
+from braket.ir.openqasm import Program
+
+with open("{{ payload_path }}") as f:
+    source = f.read()
+
+program = Program(source=source)
+
+session = AwsSession(region="{{ region }}")
+device = AwsDevice("{{ device_arn }}", aws_session=session)
+
+task = device.run(program, shots={{ shots }})
+result = task.result()
+
+counts = getattr(result, "measurement_counts", {})
+print(json.dumps(counts))
