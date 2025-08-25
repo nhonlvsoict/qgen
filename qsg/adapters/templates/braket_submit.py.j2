@@ -2,13 +2,16 @@ import json
 from braket.aws import AwsDevice, AwsSession
 from braket.ir.openqasm import Program
 
+device_arn = os.getenv("DEVICE_ARN")
+region = os.getenv("REGION")
+
 with open("{{ payload_path }}") as f:
     source = f.read()
 
 program = Program(source=source)
 
-session = AwsSession(region="{{ region }}")
-device = AwsDevice("{{ device_arn }}", aws_session=session)
+session = AwsSession(region=region)
+device = AwsDevice(device_arn, aws_session=session)
 
 task = device.run(program, shots={{ shots }})
 result = task.result()
