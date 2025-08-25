@@ -21,8 +21,6 @@ class BraketQasm3Adapter(Adapter):
     def entrypoint(self) -> str:
         context = {
             "payload_path": self.config.get("payload_path", "/app/payload/program.qasm"),
-            "device_arn": self.config.get("device_arn"),
-            "region": self.config.get("region"),
             "shots": self.config.get("shots", 8192),
         }
         return render_template(
