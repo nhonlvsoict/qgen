@@ -26,5 +26,5 @@ class BraketQasm3Adapter(Adapter):
         return render_template(
             "braket_submit.py.j2",
             context,
-            required_fields=["payload_path", "device_arn", "region"],
+            required_fields=["payload_path", "shots"],
         )
