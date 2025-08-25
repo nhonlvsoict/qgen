@@ -37,7 +37,7 @@ workspace = Workspace.from_connection_string(str(connection_string))
 with open("{{ payload_path }}", "rb") as f:
     program = f.read()
 
-target = workspace.get_targets(name="{{ target }}")  # e.g., "ionq.simulator"
+target = workspace.get_targets(name="{{ target }}") 
 job = target.submit(
     input_data=program,
     input_data_format="qir.v1",
@@ -45,7 +45,7 @@ job = target.submit(
     name="my-qir-job",
     input_params={"entryPoint": "main", "arguments": [], "shots": 8192},
 )
-print("Submitted job:", job.id)
+print("Submitted job1:", job.id)
 
 job.wait_until_completed()
 result = job.get_results()
