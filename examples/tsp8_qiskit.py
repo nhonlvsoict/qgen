@@ -46,7 +46,7 @@ def build_circuit():
     unit = QuantumRegister(6, 'unit')
     eigen = QuantumRegister(8, 'eigen')
     unit_classical = ClassicalRegister(6, 'unit_classical')
-    qc = QuantumCircuit(unit, eigen, unit_classical)
+    qc = QuantumCircuit(unit, eigen, unit_classical, name="main")
     #
 
     # Setting one eigenstate 
@@ -82,6 +82,8 @@ def build_circuit():
 
     # Draw
     # qc.draw()
+
+    qc.name = "main"
     return qc
 
 

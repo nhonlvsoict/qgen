@@ -38,6 +38,39 @@ def test_lower_to_ir_qir(tmp_path):
     assert result == {'program.bc': b'1234'}
 
 
+def test_lower_to_ir_qir_ll(tmp_path):
+    src = tmp_path / 'program.ll'
+    src.write_text('; module')
+    result = lower_to_ir(str(src), 'qir')
+    assert result == {'program.ll': b'; module'}
+
+
+def test_lower_to_ir_qiskit_to_qir(tmp_path):
+    qiskit = types.ModuleType('qiskit')
+    class QuantumCircuit:
+        def __init__(self):
+            self.name = 'test'
+    qiskit.QuantumCircuit = QuantumCircuit
+    sys.modules['qiskit'] = qiskit
+
+    qiskit_qir = types.ModuleType('qiskit_qir')
+    class Module:
+        def __str__(self):
+            return '; qir'
+    def to_qir_module(qc):
+        return Module(), ['main']
+    qiskit_qir.to_qir_module = to_qir_module
+    sys.modules['qiskit_qir'] = qiskit_qir
+
+    src = tmp_path / 'circuit.py'
+    src.write_text('from qiskit import QuantumCircuit\n'
+                   'def build_circuit():\n'
+                   '    return QuantumCircuit()\n')
+
+    result = lower_to_ir(str(src), 'qir')
+    assert result == {'program.ll': b'; qir'}
+
+
 def test_lower_to_ir_unknown(tmp_path):
     src = tmp_path / 'program.txt'
     src.write_text('hello')
