@@ -16,7 +16,7 @@ class AzureQIRAdapter(Adapter):
         return ir_artifact
 
     def runtime_packages(self) -> list[str]:
-        return ["azure-quantum", "azure-identity"]
+        return ["azure-quantum", "azure-identity", "qiskit_qir"]
 
     def entrypoint(self) -> str:
         context = {
