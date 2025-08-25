@@ -97,7 +97,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--exp", choices=["bv","grover","grover_new","grover_origin"], required=True)
     ap.add_argument("--ns", nargs="+", type=int, required=True)
-    ap.add_argument("--modes", nargs="+", choices=["classical","aer","ibm"], required=True)
+    ap.add_argument("--modes", nargs="+", choices=["classical","aer","ibm","azure"], required=True)
     ap.add_argument("--image-prefix", default="qsg/exp")
     ap.add_argument("--csv", default="results.csv")
     ap.add_argument("--rebuild", action="store_true",
@@ -177,6 +177,35 @@ def main():
                 top_dec, top_p, big_endian = parse_quantum_counts(data, n)
                 rows.append({
                     "exp": args.exp, "n": n, "backend": "ibmq_qasm",
+                    "build_s": round(build_s,3),
+                    "submit_to_result_s": data.get("elapsed_s"),
+                    "oracle_or_circuits": 1 if args.exp=="bv" else int((3.14159/4) * (2**(n/2))),  # Grover iteration estimate
+                    "success_prob": top_p,
+                    "note": f'solution_be={big_endian}',  # big-endian bitstring to compare to marked
+                    "counts": json.dumps(counts) if counts else None,
+                    "properties": json.dumps(data.get("properties")) if data.get("properties") else None,
+                    "running_s": data.get("properties", {}).get("running_s", None),
+                })
+
+        # Azure Quantum (needs token)
+        if "azure" in args.modes:
+            token = os.getenv("CONNECTION_STRING")
+            if not token:
+                print("[WARN] Azure mode requested but CONNECTION_STRING not set; skipping.")
+            else:
+                tag = f"{args.image_prefix}:{args.exp}-azure-n{n}"
+                if args.rebuild or not image_exists(tag):
+                    t0 = time.time()
+                    build_image(exp_file, tag, target="azure", env_vars=params)
+                    build_s = time.time() - t0
+                else:
+                    build_s = 0.0
+                    print(f"Reuse {tag}")
+                data = qgen_local_run(tag, env={"CONNECTION_STRING": token})
+                counts = data.get("counts")
+                top_dec, top_p, big_endian = parse_quantum_counts(data, n)
+                rows.append({
+                    "exp": args.exp, "n": n, "backend": "azure_qasm",
                     "build_s": round(build_s,3),
                     "submit_to_result_s": data.get("elapsed_s"),
                     "oracle_or_circuits": 1 if args.exp=="bv" else int((3.14159/4) * (2**(n/2))),  # Grover iteration estimate
