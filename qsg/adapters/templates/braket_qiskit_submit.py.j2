@@ -1,5 +1,5 @@
 from importlib.util import spec_from_file_location, module_from_spec
-from qiskit_braket_provider import BraketLocalBackend
+from qiskit_braket_provider import AWSBraketProvider
 
 
 def load_circuit(path: str):
@@ -13,8 +13,14 @@ def load_circuit(path: str):
 
 payload_path = "{{ payload_path }}"
 qc = load_circuit(payload_path)
-backend = BraketLocalBackend()
-job = backend.run(qc)
+
+
+
+backend = AWSBraketProvider().get_backend("arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3")
+job = backend.run(qc, shots=8192)
+
 print("Job ID:", job.job_id())
-print(job.result())
+
+print(job.result().get_counts())
+
 
