@@ -1,4 +1,5 @@
 from pathlib import Path
+from qiskit import transpile
 def lower_to_ir(src_path: str, kind: str):
     src = Path(src_path)
     if not src.exists():
@@ -23,9 +24,10 @@ def lower_to_ir(src_path: str, kind: str):
             return {f"program{src.suffix}": src.read_bytes()}
 
         if src.suffix == ".py":
-            import qiskit
-            QuantumCircuit = qiskit.QuantumCircuit
-            transpile = getattr(qiskit, "transpile", lambda qc, basis_gates, optimization_level: qc)
+            from qiskit import QuantumCircuit
+            # import qiskit
+            # QuantumCircuit = qiskit.QuantumCircuit
+            # transpile = getattr(qiskit, "transpile", lambda qc, basis_gates, optimization_level: qc)
             from qiskit_qir import to_qir_module
 
             scope = {}
