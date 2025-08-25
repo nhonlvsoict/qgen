@@ -1,29 +1,66 @@
 import os, json
+from datetime import datetime, timezone
 from azure.quantum import Workspace
 
+def _to_dt(x):
+    if not x:
+        return None
+    # Azure usually returns RFC3339/ISO8601; be permissive
+    try:
+        # 2024-07-26T12:34:56.789Z
+        return datetime.fromisoformat(x.replace("Z", "+00:00")).astimezone(timezone.utc)
+    except Exception:
+        return None
 
-def props_to_dict(details):
-    """Safely extract timing fields from Azure job details."""
+def extract_spans(job):
+    """
+    Returns a small dict like:
+      {"compiling_s": ..., "queue_s": ..., "running_s": ..., "total_s": ...}
+    using (1) job.properties() if available; else
+    (2) timestamps on job.details to compute queue/run/total.
+    Missing values are omitted.
+    """
     out = {}
-    key_map = {
-        "compiling_s": ["compilation_time", "compile_time", "transpile_time"],
-        "queue_s": ["queue_time"],
-        "running_s": ["run_time", "execution_time"],
-        "total_s": ["total_time", "wall_time", "elapsed_time"],
-    }
 
-    detail_dict = details if isinstance(details, dict) else getattr(details, "__dict__", {})
-    for key, names in key_map.items():
-        for name in names:
-            value = detail_dict.get(name)
-            if value is not None:
-                try:
-                    out[key] = float(value)
-                except Exception:
-                    out[key] = value
-                break
+    # (1) Try provider-specific properties first (may be empty/None)
+    try:
+        props = job.properties()
+    except Exception:
+        props = None
+
+    if isinstance(props, dict):
+        # Map any friendly keys if present
+        for dest, keys in {
+            "compiling_s": ["compilation_time", "compile_time", "transpile_time"],
+            "queue_s":     ["queue_time"],
+            "running_s":   ["run_time", "execution_time"],
+            "total_s":     ["total_time", "wall_time", "elapsed_time"],
+        }.items():
+            for k in keys:
+                v = props.get(k)
+                if v is not None:
+                    try:
+                        out[dest] = float(v)
+                    except Exception:
+                        pass
+                    break
+
+    # (2) Derive from timestamps if any span is still missing
+    d = getattr(job, "details", None)
+    if d:
+        # Common timestamp names (different providers use different casings)
+        created = _to_dt(getattr(d, "creation_time", None) or getattr(d, "creationTime", None))
+        begin   = _to_dt(getattr(d, "begin_execution_time", None) or getattr(d, "beginExecutionTime", None))
+        end     = _to_dt(getattr(d, "end_execution_time", None) or getattr(d, "endExecutionTime", None))
+
+        if created and begin and "queue_s" not in out:
+            out["queue_s"] = (begin - created).total_seconds()
+        if begin and end and "running_s" not in out:
+            out["running_s"] = (end - begin).total_seconds()
+        if created and end and "total_s" not in out:
+            out["total_s"] = (end - created).total_seconds()
+
     return out or None
-
 
 connection_string = os.getenv("CONNECTION_STRING")
 
@@ -48,10 +85,13 @@ job = target.submit(
 print("Submitted job1:", job.id)
 
 job.wait_until_completed()
+
 result = job.get_results()
-properties = props_to_dict(job.details)
+
 payload = {"counts": result}
-if properties:
-    payload["properties"] = properties
+spans = extract_spans(job)
+if spans:
+    payload["properties"] = spans
+
 print(json.dumps(payload))
 
