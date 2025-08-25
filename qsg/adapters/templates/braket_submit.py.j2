@@ -10,7 +10,7 @@ with open("{{ payload_path }}") as f:
 
 program = Program(source=source)
 
-session = AwsSession(region=region)
+session = AwsSession().copy_session(region=region)
 device = AwsDevice(device_arn, aws_session=session)
 
 task = device.run(program, shots={{ shots }})
