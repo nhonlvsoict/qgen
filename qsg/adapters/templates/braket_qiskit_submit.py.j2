@@ -85,7 +85,7 @@ boto = boto3.Session(region_name=region)
 aws_sess = AwsSession(boto_session=boto)
 provider = BraketProvider(aws_session=aws_sess)
 
-backend = provider.get_backend("Ankaa-3")  # Rigetti QPU (human-readable name)
+backend = provider.get_backend("Garnet")  # Rigetti QPU (human-readable name)
 
 # Wall-clock start
 t0 = time.perf_counter()
