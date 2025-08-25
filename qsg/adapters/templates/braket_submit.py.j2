@@ -1,6 +1,8 @@
 import json, os, boto3, sys
 from braket.aws import AwsDevice, AwsSession
 from braket.ir.openqasm import Program
+from braket.circuits import Circuit
+from braket.circuits.serialization import IRType
 
 device_arn = os.getenv("DEVICE_ARN")
 region = os.getenv("REGION")
