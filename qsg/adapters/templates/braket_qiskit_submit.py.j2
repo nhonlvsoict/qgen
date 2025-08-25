@@ -15,7 +15,7 @@ payload_path = "{{ payload_path }}"
 qc = load_circuit(payload_path)
 
 
-backend = AWSBraketProvider().get_backend("quantum-simulator/amazon/dm1")
+backend = AWSBraketProvider().get_backend("Ankaa-3")
 
 #tqc = transpile(qc, backend=backend, optimization_level=3)
 job = backend.run(qc, shots=8192)
