@@ -82,6 +82,8 @@ def build_circuit():
 
     # Draw
     # qc.draw()
+
+    qc.name = "main"
     return qc
 
 
