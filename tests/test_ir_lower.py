@@ -76,3 +76,10 @@ def test_lower_to_ir_unknown(tmp_path):
     src.write_text('hello')
     with pytest.raises(ValueError):
         lower_to_ir(str(src), 'unknown')
+
+
+def test_lower_to_ir_qiskit_passthrough(tmp_path):
+    src = tmp_path / 'circuit.py'
+    src.write_text('print("hello")')
+    result = lower_to_ir(str(src), 'qiskit')
+    assert result == {'program.py': 'print("hello")'}

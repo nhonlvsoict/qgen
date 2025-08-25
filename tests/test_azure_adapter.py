@@ -5,11 +5,10 @@ import pytest
 def test_entrypoint_uses_default_context():
     adapter = AzureQIRAdapter()
     code = adapter.entrypoint()
-    assert '/app/payload/program.bc' in code
-    assert 'target="microsoft.qpu"' in code
+    assert '/app/payload/program.ll' in code
+    assert 'rigetti.sim.qvm' in code
     # ensure authentication env vars are referenced
-    assert 'AZURE_QUANTUM_SUBSCRIPTION_ID' in code
-    assert 'AZURE_QUANTUM_RESOURCE_GROUP' in code
+    assert 'CONNECTION_STRING' in code
 
 
 def test_entrypoint_accepts_custom_context():
@@ -17,8 +16,8 @@ def test_entrypoint_accepts_custom_context():
     code = adapter.entrypoint()
     assert '/tmp/foo.bc' in code
     assert 'quantinuum.qpu' in code
-    assert '/app/payload/program.bc' not in code
-    assert 'microsoft.qpu' not in code
+    assert '/app/payload/program.ll' not in code
+    assert 'rigetti.sim.qvm' not in code
 
 
 def test_entrypoint_missing_required_field():
