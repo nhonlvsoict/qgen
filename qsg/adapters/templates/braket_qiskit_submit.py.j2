@@ -15,7 +15,7 @@ payload_path = "{{ payload_path }}"
 qc = load_circuit(payload_path)
 
 
-backend = AWSBraketProvider().get_backend("Ankaa-3")
+backend = AWSBraketProvider().get_backend("IQM")
 
 tqc = transpile(qc, backend=backend, optimization_level=3)
 job = backend.run(tqc, shots=8192)
