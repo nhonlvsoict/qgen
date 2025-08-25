@@ -16,7 +16,7 @@ qc = load_circuit(payload_path)
 
 
 
-backend = AWSBraketProvider(region_name="us-west-1").get_backend("arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3")
+backend = AWSBraketProvider(region="us-west-1").get_backend("arn:aws:braket:us-west-1::device/qpu/rigetti/Ankaa-3")
 job = backend.run(qc, shots=8192)
 
 print("Job ID:", job.job_id())
