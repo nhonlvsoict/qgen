@@ -27,5 +27,4 @@ print("Submitted job:", job.id)
 
 job.wait_until_completed()
 result = job.get_results()
-print(f"Job status: {job.status}")
 print(f"Job result: {result}")
