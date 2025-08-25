@@ -20,7 +20,7 @@ class AzureQIRAdapter(Adapter):
 
     def entrypoint(self) -> str:
         context = {
-            "payload_path": self.config.get("payload_path", "/app/payload/program.bc"),
+            "payload_path": self.config.get("payload_path", "/app/payload/program.ll"),
             "target": self.config.get("target", "quantinuum.sim.h1-1sc"),
         }
         return render_template(
