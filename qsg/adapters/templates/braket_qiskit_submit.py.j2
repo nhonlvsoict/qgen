@@ -1,6 +1,6 @@
 from importlib.util import spec_from_file_location, module_from_spec
 from qiskit_braket_provider import AWSBraketProvider
-
+from qiskit import transpile
 
 def load_circuit(path: str):
     spec = spec_from_file_location("payload", path)
@@ -15,9 +15,10 @@ payload_path = "{{ payload_path }}"
 qc = load_circuit(payload_path)
 
 
-
 backend = AWSBraketProvider().get_backend("Ankaa-3")
-job = backend.run(qc, shots=8192)
+
+tqc = transpile(qc, backend=backend, optimization_level=3)
+job = backend.run(tqc, shots=8192)
 
 print("Job ID:", job.job_id())
 
