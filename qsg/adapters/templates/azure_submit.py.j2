@@ -19,8 +19,7 @@ workspace = Workspace(
     resource_group=resource_group,
     name=workspace_name,
     location=location,
-    credential=credential,
-    api_key=api_key
+    credential=credential
 )
 
 with open("{{ payload_path }}", "rb") as f:
