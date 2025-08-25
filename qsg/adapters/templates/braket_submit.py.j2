@@ -1,4 +1,4 @@
-import json, os
+import json, os, boto3
 from braket.aws import AwsDevice, AwsSession
 from braket.ir.openqasm import Program
 
@@ -10,7 +10,8 @@ with open("{{ payload_path }}") as f:
 
 program = Program(source=source)
 
-session = AwsSession().copy_session(region=region)
+boto_sess = boto3.Session(region_name=region)
+session   = AwsSession(boto_session=boto_sess)
 device = AwsDevice(device_arn, aws_session=session)
 
 task = device.run(program, shots={{ shots }})
