@@ -1,0 +1,20 @@
+from importlib.util import spec_from_file_location, module_from_spec
+from qiskit_braket_provider import BraketLocalBackend
+
+
+def load_circuit(path: str):
+    spec = spec_from_file_location("payload", path)
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if not hasattr(module, "build_circuit"):
+        raise ValueError("Expected a build_circuit() function in the payload")
+    return module.build_circuit()
+
+
+payload_path = "{{ payload_path }}"
+qc = load_circuit(payload_path)
+backend = BraketLocalBackend()
+job = backend.run(qc)
+print("Job ID:", job.job_id())
+print(job.result())
+
