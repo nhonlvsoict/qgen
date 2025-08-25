@@ -6,9 +6,31 @@ device_arn = os.getenv("DEVICE_ARN")
 region = os.getenv("REGION")
 
 with open("{{ payload_path }}") as f:
-    source = f.read()
+    src = f.read()
 
-program = Program(source=source)
+# Remove unsupported directives and normalize header
+clean_lines = []
+for ln in src.splitlines():
+    s = ln.strip().lower()
+    if s.startswith("use ") or s.startswith("include "):
+        continue
+    clean_lines.append(ln)
+src = "\n".join(clean_lines).replace("OPENQASM 3.0;", "OPENQASM 3;")
+
+# Validate and normalize via Braket's Circuit parser
+try:
+    circ = Circuit.from_ir(src)                 # raises if still unsupported
+    src  = circ.to_ir(IRType.OPENQASM).source   # normalized, Braket-compliant OQ3
+except Exception as e:
+    print("Failed to normalize OpenQASM for Braket:", e, file=sys.stderr)
+    # Surface the first few lines to help debug quickly
+    print("First lines of payload after sanitize:", file=sys.stderr)
+    for i, ln in enumerate(src.splitlines()[:10], 1):
+        print(f"{i:>2}: {ln}", file=sys.stderr)
+    raise
+
+
+program = Program(source=src)
 
 boto_sess = boto3.Session(region_name=region)
 session   = AwsSession(boto_session=boto_sess)
