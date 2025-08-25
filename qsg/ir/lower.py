@@ -1,4 +1,6 @@
 from pathlib import Path
+from qiskit import transpile
+
 
 def lower_to_ir(src_path: str, kind: str):
     src = Path(src_path)
@@ -31,9 +33,14 @@ def lower_to_ir(src_path: str, kind: str):
             exec(src.read_text(), scope)
             if "build_circuit" not in scope:
                 raise ValueError("Expected a build_circuit() function in the source file.")
+
             qc = scope["build_circuit"]()
             if not isinstance(qc, QuantumCircuit):
                 raise TypeError("build_circuit() must return a qiskit.QuantumCircuit.")
+            ALLOWED = ['rx','ry','rz','x','y','z','h','s','sdg','t','tdg',
+           'cx','cz','ccx','swap','id','measure','reset','delay','barrier']
+
+            qc = transpile(qc, basis_gates=ALLOWED, optimization_level=1)
             module, _ = to_qir_module(qc)
             return {"program.ll": str(module).encode()}
 
