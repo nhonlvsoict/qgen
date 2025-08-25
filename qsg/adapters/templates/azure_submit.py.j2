@@ -1,0 +1,29 @@
+import os
+from azure.quantum import Workspace
+from azure.identity import DefaultAzureCredential
+
+subscription_id = os.getenv("AZURE_QUANTUM_SUBSCRIPTION_ID")
+resource_group = os.getenv("AZURE_QUANTUM_RESOURCE_GROUP")
+workspace_name = os.getenv("AZURE_QUANTUM_WORKSPACE_NAME")
+location = os.getenv("AZURE_QUANTUM_LOCATION")
+
+if not all([subscription_id, resource_group, workspace_name, location]):
+    raise RuntimeError(
+        "Missing Azure Quantum workspace configuration environment variables"
+    )
+
+credential = DefaultAzureCredential()
+workspace = Workspace(
+    subscription_id=subscription_id,
+    resource_group=resource_group,
+    name=workspace_name,
+    location=location,
+    credential=credential,
+)
+
+with open("{{ payload_path }}", "rb") as f:
+    program = f.read()
+
+job = workspace.submit(input_data=program, target="{{ target }}")
+print(f"Submitted job: {job.id}")
+
