@@ -2,25 +2,16 @@ import os
 from azure.quantum import Workspace
 from azure.identity import DefaultAzureCredential
 
-subscription_id = os.getenv("AZURE_QUANTUM_SUBSCRIPTION_ID")
-resource_group = os.getenv("AZURE_QUANTUM_RESOURCE_GROUP")
-workspace_name = os.getenv("AZURE_QUANTUM_WORKSPACE_NAME")
-location = os.getenv("AZURE_QUANTUM_LOCATION")
-api_key = os.getenv("AZURE_QUANTUM_API_KEY")
 
-if not all([subscription_id, resource_group, workspace_name, location, api_key]):
+connection_string = os.getenv("CONNECTION_STRING")
+
+if not all([CONNECTION_STRING]):
     raise RuntimeError(
         "Missing Azure Quantum workspace configuration environment variables"
     )
 
 credential = DefaultAzureCredential()
-workspace = Workspace(
-    subscription_id=subscription_id,
-    resource_group=resource_group,
-    name=workspace_name,
-    location=location,
-    credential=credential
-)
+workspace = Workspace.from_connection_string(str(connection_string))
 
 with open("{{ payload_path }}", "rb") as f:
     program = f.read()
