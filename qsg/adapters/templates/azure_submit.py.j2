@@ -25,29 +25,20 @@ def props_to_dict(details):
     return out or None
 
 
-subscription_id = os.getenv("AZURE_QUANTUM_SUBSCRIPTION_ID")
-resource_group = os.getenv("AZURE_QUANTUM_RESOURCE_GROUP")
-workspace_name = os.getenv("AZURE_QUANTUM_WORKSPACE_NAME")
-location = os.getenv("AZURE_QUANTUM_LOCATION")
+connection_string = os.getenv("CONNECTION_STRING")
 
-if not all([subscription_id, resource_group, workspace_name, location]):
+if not all([connection_string]):
     raise RuntimeError(
         "Missing Azure Quantum workspace configuration environment variables",
     )
 
-workspace = Workspace(
-    subscription_id=subscription_id,
-    resource_group=resource_group,
-    name=workspace_name,
-    location=location,
-)
+workspace = Workspace.from_connection_string(str(connection_string))
 
 with open("{{ payload_path }}", "rb") as f:
     program = f.read()
 
-target="{{ target }}"
-backend = workspace.get_targets(name=target)  # e.g., "ionq.simulator"
-job = backend.submit(
+target = workspace.get_targets(name="{{ target }}")  # e.g., "ionq.simulator"
+job = target.submit(
     input_data=program,
     input_data_format="qir.v1",
     output_data_format="microsoft.quantum-results.v1",
