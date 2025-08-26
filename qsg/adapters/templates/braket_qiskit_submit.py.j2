@@ -53,7 +53,7 @@ def spans_from_timestamps(created_at, began_at, ended_at, wall_clock_start):
 
 # ---------- main ----------
 payload_path = "{{ payload_path }}"
-shots = 1000
+shots = 100
 
 qc = load_circuit(payload_path)
 # qc = transpile(qc, optimization_level=3)
@@ -61,7 +61,7 @@ qc = load_circuit(payload_path)
 # Provider with no args (region comes from AWS_DEFAULT_REGION or ~/.aws/config)
 provider = BraketProvider()
 
-backend = provider.get_backend("Aquila")  # Rigetti backend by name
+backend = provider.get_backend("Garnet")  # Rigetti backend by name
 
 t0 = time.perf_counter()
 job = backend.run(qc, shots=shots)
