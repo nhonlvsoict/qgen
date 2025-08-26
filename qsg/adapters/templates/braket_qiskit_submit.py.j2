@@ -61,7 +61,7 @@ qc = load_circuit(payload_path)
 # Provider with no args (region comes from AWS_DEFAULT_REGION or ~/.aws/config)
 provider = BraketProvider()
 
-backend = provider.get_backend("quantum-simulator/amazon/dm1")  # Rigetti backend by name
+backend = provider.get_backend("DM1")  # Rigetti backend by name
 
 t0 = time.perf_counter()
 job = backend.run(qc, shots=shots)
