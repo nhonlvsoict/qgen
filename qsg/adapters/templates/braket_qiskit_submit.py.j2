@@ -53,7 +53,7 @@ def spans_from_timestamps(created_at, began_at, ended_at, wall_clock_start):
 
 # ---------- main ----------
 payload_path = "{{ payload_path }}"
-shots = 8192
+shots = 1000
 
 qc = load_circuit(payload_path)
 # qc = transpile(qc, optimization_level=3)
