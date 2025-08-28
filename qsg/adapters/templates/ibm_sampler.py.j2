@@ -119,7 +119,11 @@ else:
     #ibm_quantum_platform
     from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
     service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token, instance="quantum")
-    backend = service.least_busy(operational=True, simulator=False)
+    #backend = service.least_busy(operational=True, simulator=False)
+    
+    # Specify the backend by name
+    backend = service.backend("ibm_torino")
+
     sampler = Sampler(mode=backend)
     sampler.options.default_shots = 8192  # Options can be set using auto-complete.
 
