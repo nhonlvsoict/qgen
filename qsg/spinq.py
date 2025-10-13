@@ -9,6 +9,7 @@ from Crypto.PublicKey import RSA
 import base64
 
 username = "spinq"
+keyfile = "/spinq.pub"
 # login to SpinQCloudBackend``
 #backend = get_spinq_cloud(username, None, %SPINQIT_JUPYTER_TOKEN) # specify the token, only for jupyter notebook
 backend = get_spinq_cloud(username, keyfile)
@@ -27,4 +28,5 @@ if gemini.available():
     config.configure_shots(1024)
     config.configure_task('newapitest2','newapi')
     res = backend.execute(ir,config)
+
     print(res.probabilities)
