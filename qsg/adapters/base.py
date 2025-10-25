@@ -32,4 +32,7 @@ def load_adapter(target: str, **kwargs) -> "Adapter":
     if target == "braket":
         from .braket_qasm3 import BraketQasm3Adapter
         return BraketQasm3Adapter(**kwargs)
+    if target == "google":
+        from .google_cirq import GoogleCirqAdapter
+        return GoogleCirqAdapter(**kwargs)
     raise ValueError(f"Unknown target: {target}")

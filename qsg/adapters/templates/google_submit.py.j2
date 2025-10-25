@@ -1,0 +1,16 @@
+import os
+import cirq
+import cirq_google as cg
+
+payload_path = "{{ payload_path }}"
+project_id = os.getenv("{{ project_id_env_var }}")
+if project_id is None:
+    raise EnvironmentError("No {{ project_id_env_var }} env var found")
+
+with open(payload_path, "r") as f:
+    qasm = f.read()
+
+circuit = cirq.circuit_from_qasm(qasm)
+engine = cg.Engine(project_id=project_id)
+result = engine.run(circuit)
+print(result)
