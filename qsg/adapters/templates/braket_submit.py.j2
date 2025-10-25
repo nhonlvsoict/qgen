@@ -1,0 +1,54 @@
+import json, os, boto3, sys
+import re
+from braket.aws import AwsDevice, AwsSession
+from braket.ir.openqasm import Program
+from braket.circuits import Circuit
+from braket.circuits.serialization import IRType
+
+device_arn = os.getenv("DEVICE_ARN")
+region = os.getenv("REGION")
+
+with open("{{ payload_path }}") as f:
+    src = f.read()
+
+# Remove unsupported directives and normalize header
+clean_lines = []
+for ln in src.splitlines():
+    s = ln.strip().lower()
+    if s.startswith("use ") or s.startswith("include "):
+        continue
+    clean_lines.append(ln)
+src = "\n".join(clean_lines).replace("OPENQASM 3.0;", "OPENQASM 3;")
+
+# Map Qiskit names to Braket OQ3 names
+src = re.sub(r'\bcp\s*\(', 'cphaseshift(', src)   # controlled phase
+src = re.sub(r'\bp\s*\(',  'phaseshift(', src)    # phase
+src = re.sub(r'\bcx\b',     'cnot', src)          # CNOT gate token
+
+# Optional: drop identity ops if present (Braket doesn’t need them)
+src = re.sub(r'^\s*id\b[^\n]*\n', '', src, flags=re.IGNORECASE | re.MULTILINE)
+
+# Validate and normalize via Braket's Circuit parser
+try:
+    circ = Circuit.from_ir(src)                 # raises if still unsupported
+    src  = circ.to_ir(IRType.OPENQASM).source   # normalized, Braket-compliant OQ3
+except Exception as e:
+    print("Failed to normalize OpenQASM for Braket:", e, file=sys.stderr)
+    # Surface the first few lines to help debug quickly
+    print("First lines of payload after sanitize:", file=sys.stderr)
+    for i, ln in enumerate(src.splitlines()[:10], 1):
+        print(f"{i:>2}: {ln}", file=sys.stderr)
+    raise
+
+
+program = Program(source=src)
+
+boto_sess = boto3.Session(region_name=region)
+session   = AwsSession(boto_session=boto_sess)
+device = AwsDevice(device_arn, aws_session=session)
+
+task = device.run(program, shots={{ shots }})
+result = task.result()
+
+counts = getattr(result, "measurement_counts", {})
+print(json.dumps(counts))

@@ -1,4 +1,6 @@
 from .base import Adapter
+from .template_manager import render as render_template
+
 
 class BraketQasm3Adapter(Adapter):
     name = "braket"
@@ -17,8 +19,12 @@ class BraketQasm3Adapter(Adapter):
         return ["amazon-braket-sdk"]
 
     def entrypoint(self) -> str:
-        return r"""
-python - <<'PY'
-print("Submitting OpenQASM 3 program to Braket... (stub)")
-PY
-"""
+        context = {
+            "payload_path": self.config.get("payload_path", "/app/payload/program.qasm"),
+            "shots": self.config.get("shots", 8192),
+        }
+        return render_template(
+            "braket_submit.py.j2",
+            context,
+            required_fields=["payload_path", "shots"],
+        )
