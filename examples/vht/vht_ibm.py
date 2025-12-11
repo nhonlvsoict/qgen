@@ -156,14 +156,14 @@ def build_circuit(t_anc=3):
 start = time.time()
 qc = build_circuit()
 
-token = os.getenv("{{ IBM_TOKEN }}")
+token = os.getenv("IBM_TOKEN")
 result_payload = {"backend_mode": None, "counts": None, "elapsed_s": None}
 
 if not token:
     # Local simulation
     # If the token is not set, we will run a local simulation using Qiskit
     # This is useful for testing or when the IBM Quantum Experience is not available
-    print("No {{ token_env_var }} env var found; running local simulation via qiskit instead.")
+    print("No IBM_TOKEN env var found; running local simulation via qiskit instead.")
     try:
         from qiskit_aer.primitives import Sampler as LocalSampler
     except ImportError:
