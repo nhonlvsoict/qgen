@@ -152,9 +152,6 @@ def build_circuit(t_anc=3):
 
     return qc
 
-qc_qpe = build_qpe_circuit(t_anc=3)
-print(qc_qpe)
-
 
 start = time.time()
 qc = build_circuit()
