@@ -274,8 +274,9 @@ def qpe_counts_to_energy(
     return energy_mode
 
 # Main execution
+t_anc=3 # số qubit phase
 start = time.time()
-qc = build_circuit()
+qc = build_circuit(t_anc)
 
 token = os.getenv("IBM_TOKEN")
 result_payload = {"backend_mode": None, "counts": None, "elapsed_s": None}
