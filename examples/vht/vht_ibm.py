@@ -162,7 +162,118 @@ def extract_counts_v2(primitive_result):
             return pub.data.c.get_counts()  # common reg name
         except Exception:
             return None
+def quasi_dist_to_counts(qd, t_anc, shots=4096):
+    """
+    Convert quasi distribution from Aer Sampler 
+    to integer counts suitable for QPE energy analysis.
 
+    Parameters
+    ----------
+    qd : dict
+        Example: {"1": 0.005859375, "3": 0.125}
+    t_anc : int
+        Number of phase qubits (length of output bitstrings)
+    shots : int
+        Total shots you want to approximate from quasi-probabilities.
+
+    Returns
+    -------
+    counts : dict
+        keys = bitstrings, values = integer counts
+    """
+    counts = {}
+    for dec_key, prob in qd.items():
+        k = int(dec_key)  # convert "3" → 3
+        bit = format(k, f"0{t_anc}b")  # convert 3 → "011" if t_anc=3
+        cnt = int(round(prob * shots))
+        if cnt > 0:
+            counts[bit] = cnt
+    return counts
+import numpy as np
+from collections import Counter
+
+def qpe_counts_to_energy(
+    counts,
+    t_anc,
+    E_min,
+    E_range,
+    return_details=True
+):
+    """
+    Phân tích kết quả đo của QPE từ counts (dict).
+
+    Parameters
+    ----------
+    counts : dict
+        Kết quả đo từ backend hoặc simulator, ví dụ:
+            {'011': 1200, '010': 800, ...}
+    t_anc : int
+        Số qubit phase trong QPE.
+    E_min : float
+        Giá trị năng lượng nhỏ nhất trong Hamiltonian gốc.
+    E_range : float
+        E_max - E_min.
+    return_details : bool
+        Nếu True trả về cả dict chi tiết.
+
+    Returns
+    -------
+    energy_estimate : float
+        Năng lượng ước lượng tốt nhất (mode của phân bố).
+    info : dict (optional)
+        Bao gồm pha, H', H gốc, thống kê đầy đủ.
+    """
+
+    def bitstr_to_int(bitstr):
+        return int(bitstr, 2)
+
+    # 1. Chuyển counts sang phân bố pha và năng lượng
+    phase_data = []
+    Hprime_data = []
+    H_data = []
+
+    for bitstr, c in counts.items():
+        k = bitstr_to_int(bitstr)
+        # Pha ước lượng
+        phi = k / (2 ** t_anc)
+        # H' ước lượng
+        Hprime = phi  # vì U = exp(2π i H')
+        # Energ gốc
+        E = E_min + Hprime * E_range
+
+        # Lưu vào list theo số lượng xuất hiện
+        for _ in range(c):
+            phase_data.append(phi)
+            Hprime_data.append(Hprime)
+            H_data.append(E)
+
+    # 2. Tính mode của năng lượng (giá trị xuất hiện nhiều nhất)
+    #    (hoặc có thể chọn mean nếu cần).
+    cnt = Counter(H_data)
+    energy_mode = cnt.most_common(1)[0][0]
+
+    # 3. Tính mean, variance
+    energy_mean = float(np.mean(H_data))
+    energy_std = float(np.std(H_data))
+
+    # 4. Chuẩn bị thông tin chi tiết
+    if return_details:
+        info = {
+            "phase_samples": phase_data,
+            "Hprime_samples": Hprime_data,
+            "H_samples": H_data,
+            "counts_total": sum(counts.values()),
+            "mode_energy": energy_mode,
+            "mean_energy": energy_mean,
+            "std_energy": energy_std,
+            "min_measured": float(min(H_data)),
+            "max_measured": float(max(H_data)),
+        }
+        return energy_mode, info
+
+    return energy_mode
+
+# Main execution
 start = time.time()
 qc = build_circuit()
 
@@ -186,8 +297,8 @@ if not token:
     # samples = res[0].data["samples"]
     result_payload["backend_mode"] = "aer_local"
     # For primitives v0, use quasi_dists; newer APIs may have .quasi_dists or ._pub_results
-    qd = getattr(res, "_pub_results", None)
-    if qd: result_payload["counts"] = qd[0]
+    qd = getattr(res, "quasi_dists", None)
+    if qd: result_payload["counts"] = quasi_dist_to_counts(qd[0], t_anc=t_anc, shots=4096)
 else:
     #ibm_quantum_platform
     from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
@@ -216,3 +327,13 @@ else:
 
 result_payload["elapsed_s"] = round(time.time() - start, 4)
 print(json.dumps(result_payload))
+
+energy_mode, info = qpe_counts_to_energy(
+    counts=result_payload["counts"],
+    t_anc=t_anc,
+    E_min=E_min,
+    E_range=E_range
+)
+
+print("Estimated ground energy:", energy_mode)
+print("Details:", info)
