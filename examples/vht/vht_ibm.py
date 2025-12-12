@@ -31,6 +31,7 @@ def bitstring_to_z(bits):
     Map bitstring '010' -> z_i in {+1, -1}
     Chọn |0> -> z=+1, |1> -> z=-1
     """
+    bits = bits[::-1]  # Reverse to match Qiskit measurement ordering
     return [1 if b == '0' else -1 for b in bits]
 
 def energy_H(bits):
