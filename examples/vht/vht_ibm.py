@@ -183,11 +183,11 @@ if not token:
     sampler = Sampler(run_options={"shots": 4096})
     res = sampler.run(qc).result()
 
-    samples = res[0].data["samples"]
+    # samples = res[0].data["samples"]
     result_payload["backend_mode"] = "aer_local"
     # For primitives v0, use quasi_dists; newer APIs may have .quasi_dists or ._pub_results
     # qd = getattr(res, "quasi_dists", None)
-    result_payload["counts"] = samples
+    result_payload["counts"] = res.get_counts()
 else:
     #ibm_quantum_platform
     from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
