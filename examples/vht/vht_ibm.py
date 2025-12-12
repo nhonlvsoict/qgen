@@ -260,8 +260,8 @@ def qpe_counts_to_energy(
     if return_details:
         info = {
             # "phase_samples": phase_data,
-            "Hprime_samples": Hprime_data,
-            "H_samples": H_data,
+            # "Hprime_samples": Hprime_data,
+            # "H_samples": H_data,
             "counts_total": sum(counts.values()),
             "mode_energy": energy_mode,
             "mean_energy": energy_mean,
