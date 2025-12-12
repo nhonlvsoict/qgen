@@ -183,7 +183,7 @@ if not token:
     result_payload["backend_mode"] = "aer_local"
     # For primitives v0, use quasi_dists; newer APIs may have .quasi_dists or ._pub_results
     # qd = getattr(res, "quasi_dists", None)
-    if qd: result_payload["counts"] = res[0].data["counts"]
+    result_payload["counts"] = res[0].data["counts"]
 else:
     #ibm_quantum_platform
     from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
