@@ -259,7 +259,7 @@ def qpe_counts_to_energy(
     # 4. Chuẩn bị thông tin chi tiết
     if return_details:
         info = {
-            "phase_samples": phase_data,
+            # "phase_samples": phase_data,
             "Hprime_samples": Hprime_data,
             "H_samples": H_data,
             "counts_total": sum(counts.values()),
