@@ -179,8 +179,10 @@ if not token:
     # except ImportError:
     #     from qiskit_ibm_runtime import Sampler as LocalSampler
     from qiskit_ibm_runtime import SamplerV2
+    from qiskit_ibm_runtime.fake_provider import FakeSherbrookeV2
+    fake_backend = FakeSherbrookeV2()
     
-    sampler = SamplerV2(options={"shots": 4096, "shot_type": "counts"})
+    sampler = SamplerV2(backend=FakeSherbrookeV2(), options={"shots": 4096, "shot_type": "counts"})
     res = sampler.run([qc]).result()
     result_payload["backend_mode"] = "aer_local"
     # For primitives v0, use quasi_dists; newer APIs may have .quasi_dists or ._pub_results
