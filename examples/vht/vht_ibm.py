@@ -152,6 +152,16 @@ def build_circuit(t_anc=3):
 
     return qc
 
+def extract_counts_v2(primitive_result):
+    """Get counts dict from Primitives v2 Sampler result."""
+    try:
+        pub = primitive_result[0]  # SamplerPubResult
+        return pub.join_data().get_counts()
+    except Exception:
+        try:
+            return pub.data.c.get_counts()  # common reg name
+        except Exception:
+            return None
 
 start = time.time()
 qc = build_circuit()
@@ -184,7 +194,7 @@ else:
     backend = service.backend("ibm_torino")
 
     sampler = Sampler(mode=backend)
-    sampler.options.default_shots = 8192  # Options can be set using auto-complete.
+    sampler.options.default_shots = 4000  # Options can be set using auto-complete.
 
     pm = generate_preset_pass_manager(backend=backend, optimization_level=3)
     isa_circuit = pm.run(qc)
@@ -195,7 +205,7 @@ else:
 
     res = job.result()
     result_payload["backend_mode"] = "ibmq_qasm"
-    result_payload["properties"] = props_to_dict(props, res)
+    # result_payload["properties"] = props_to_dict(props, res)
     result_payload["counts"] = extract_counts_v2(res)
 
 
